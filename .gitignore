@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+dist/
+.npm
+
+# Env
+.env*
+!.env.example
+
+# Docker
+postgres_data/
+
+# IDE / OS
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.DS_Store
