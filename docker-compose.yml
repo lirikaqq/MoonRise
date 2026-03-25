@@ -1,43 +1,73 @@
 services:
+  # PostgreSQL
   db:
     image: postgres:16-alpine
-    container_name: moonrise-db
-    restart: unless-stopped
+    container_name: moonrise-postgres
+    restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: moonrise
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: moonrise-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Backend (FastAPI)
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: moonrise-backend
-    restart: unless-stopped
-    env_file:
-      - .env
+    restart: always
     ports:
       - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/moonrise
+      REDIS_URL: redis://redis:6379/0
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
+      DISCORD_REDIRECT_URI: http://localhost:8000/auth/discord/callback
+      FRONTEND_URL: http://localhost:5173
+      SECRET_KEY: ${SECRET_KEY:-super_secret_key_change_me}
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 10080
+      OVERFAST_API_URL: https://overfast-api.tekrop.fr
     volumes:
       - ./backend:/app
     depends_on:
-      - db
-    command: >
-      bash -c "pip install --no-cache-dir -r requirements.txt 2>/dev/null || pip install --no-cache-dir --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt &&
-               uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
+  # Frontend (React + Vite)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: moonrise-frontend
-    restart: unless-stopped
-    env_file:
-      - .env
+    restart: always
     ports:
       - "5173:5173"
     volumes:
@@ -45,7 +75,7 @@ services:
       - /app/node_modules
     depends_on:
       - backend
-    command: npm run dev -- --host
 
 volumes:
   postgres_data:
+  redis_data:

@@ -109,6 +109,6 @@ async def get_current_user_info(
         "discord_id": user.discord_id,
         "username": user.username,
         "avatar_url": user.avatar_url,
-        "role": user.role.value if user.role else "player",
+        "role": user.role if user.role else "player",
         "division": user.division,
     }

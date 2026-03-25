@@ -1,22 +1,23 @@
-import Header from '../components/layout/Header';
-import HeroSection from '../components/hero/HeroSection';
-import UpcomingTournament from '../components/tournament/UpcomingTournament';
-import Footer from '../components/layout/Footer';
+import "./home.css";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
+import HeroSection from "../components/hero/HeroSection";
+import UpcomingTournamentSection from "../components/tournament/UpcomingTournamentSection";
+import StatsSection from "../components/stats/StatsSection";
+import useReveal from "../hooks/useReveal.jsx";
 
 export default function Home() {
+  useReveal();
+
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Шапка фиксированная */}
+    <div className="home-page">
       <Header />
-
-      {/* Основной контент */}
-      <main className="flex-grow flex flex-col">
-        <HeroSection />
-        <UpcomingTournament />
-      </main>
-
-      {/* Футер */}
-      <Footer />
+      <HeroSection />
+      <div className="second-screen">
+        <UpcomingTournamentSection />
+        <StatsSection />
+        <Footer />
+      </div>
     </div>
   );
 }

@@ -3,26 +3,32 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from app.database import get_db
-from app.routers import auth
+from app.routers import auth, players, overfast, tournaments, homepage
 import logging
 
-# Логирование
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="MoonRise API", version="1.0.0")
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
-# Роутеры
 app.include_router(auth.router)
+app.include_router(players.router)
+app.include_router(overfast.router)
+app.include_router(tournaments.router)
+app.include_router(homepage.router)
 
 
 @app.on_event("startup")
@@ -37,11 +43,7 @@ async def shutdown():
 
 @app.get("/")
 async def root():
-    return {
-        "status": "MoonRise API is running 🌙",
-        "version": "1.0.0",
-        "docs": "/docs"
-    }
+    return {"status": "MoonRise API is running 🌙", "version": "1.0.0", "docs": "/docs"}
 
 
 @app.get("/health")

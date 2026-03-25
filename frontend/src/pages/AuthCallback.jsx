@@ -1,32 +1,45 @@
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { authApi } from '../api/auth'
 
 export default function AuthCallback() {
   const [searchParams] = useSearchParams()
-  const { saveToken } = useAuth()
+  const { login } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
     const token = searchParams.get('token')
-    if (token) {
-      saveToken(token)
+
+    if (!token) {
       navigate('/')
-    } else {
-      navigate('/')
+      return
     }
-  }, [searchParams, saveToken, navigate])
+
+    // Получаем данные пользователя по токену
+    authApi.getMe(token)
+      .then(userData => {
+        login(token, userData)
+        navigate('/')
+      })
+      .catch(() => {
+        navigate('/')
+      })
+  }, [])
 
   return (
     <div style={{
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      minHeight: '100vh',
-      background: '#0a0a0f',
-      color: '#fff',
+      height: '100vh',
+      background: '#13242d',
+      color: '#13c8b0',
+      fontFamily: 'Palui, sans-serif',
+      fontSize: '24px',
+      letterSpacing: '0.05em',
     }}>
-      <p>Авторизация...</p>
+      АВТОРИЗАЦИЯ...
     </div>
   )
 }

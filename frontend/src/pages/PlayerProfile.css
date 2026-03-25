@@ -1,0 +1,455 @@
+.profile-page {
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image: url("/assets/images/grid-bg.png");
+  background-repeat: repeat;
+}
+
+.profile-main {
+  padding: 40px 0 60px;
+}
+
+.profile-container {
+  max-width: 1620px;
+  width: calc(100% - 40px);
+  margin: 0 auto;
+}
+
+/* BREADCRUMB */
+.profile-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+  font-family: "Ponter", sans-serif;
+  font-size: 13px;
+  color: var(--accent-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.profile-breadcrumb a {
+  color: var(--accent-dark);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.profile-breadcrumb a:hover { color: var(--accent); }
+
+.profile-breadcrumb-sep {
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.profile-breadcrumb span:last-child { color: var(--accent); }
+
+/* LAYOUT */
+.profile-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* SIDEBAR */
+.profile-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 20px;
+}
+
+/* КАРТОЧКА профиля */
+.profile-card {
+  background: rgba(16, 39, 47, 0.84);
+  border: 1px solid var(--border);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+/* АВАТАР */
+.profile-avatar-wrap {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin-bottom: 8px;
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+  display: block;
+}
+
+.profile-avatar-placeholder {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(19, 200, 176, 0.1);
+  border: 2px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Palui", sans-serif;
+  font-size: 40px;
+  color: var(--accent);
+}
+
+.profile-avatar-border {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(19, 200, 176, 0.3);
+  animation: ring-rotate 8s linear infinite;
+}
+
+/* ИМЯ */
+.profile-username {
+  font-family: "Palui", sans-serif;
+  font-size: 24px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
+/* РОЛЬ */
+.profile-role-badge {
+  font-family: "Ponter", sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 12px;
+  border: 1px solid;
+}
+
+.role-player {
+  color: var(--accent-dark);
+  border-color: rgba(19, 200, 176, 0.3);
+}
+
+.role-moderator {
+  color: #ffaa00;
+  border-color: rgba(255, 170, 0, 0.4);
+}
+
+.role-admin {
+  color: #ff5050;
+  border-color: rgba(255, 80, 80, 0.4);
+}
+
+/* BATTLETAG */
+.profile-battletag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Ponter", sans-serif;
+  font-size: 13px;
+  color: var(--accent);
+  background: rgba(19, 200, 176, 0.08);
+  border: 1px solid rgba(19, 200, 176, 0.2);
+  padding: 6px 14px;
+  width: 100%;
+  justify-content: center;
+}
+
+/* ДИВИЗИОН */
+.profile-division {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.profile-division-label {
+  font-family: "Ponter", sans-serif;
+  font-size: 11px;
+  color: var(--accent-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.profile-division-value {
+  font-family: "Palui", sans-serif;
+  font-size: 16px;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+/* СТАТУС */
+.profile-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+.profile-status-text {
+  font-family: "Ponter", sans-serif;
+  font-size: 12px;
+  color: var(--accent-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* СТАТИСТИКА */
+.profile-stats-card,
+.profile-tags-card {
+  background: rgba(16, 39, 47, 0.84);
+  border: 1px solid rgba(19, 200, 176, 0.3);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-section-title {
+  font-family: "Ponter", sans-serif;
+  font-size: 13px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-section-dot {
+  color: var(--accent);
+  font-size: 18px;
+}
+
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.profile-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px;
+  background: rgba(19, 200, 176, 0.05);
+  border: 1px solid rgba(19, 200, 176, 0.1);
+}
+
+.profile-stat-value {
+  font-family: "ST-SimpleSquare", monospace;
+  font-size: 24px;
+  color: var(--accent);
+}
+
+.profile-stat-label {
+  font-family: "Ponter", sans-serif;
+  font-size: 10px;
+  color: var(--accent-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+/* BATTLE TAGS */
+.profile-tags-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-tag-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(19, 200, 176, 0.05);
+  border: 1px solid rgba(19, 200, 176, 0.1);
+}
+
+.profile-tag-text {
+  font-family: "Ponter", sans-serif;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.profile-tag-primary {
+  font-family: "Ponter", sans-serif;
+  font-size: 10px;
+  color: var(--accent-light);
+  border: 1px solid var(--accent-light);
+  padding: 2px 6px;
+  letter-spacing: 0.05em;
+}
+
+/* EDIT BTN */
+.profile-edit-btn {
+  width: 100%;
+  padding: 14px;
+  font-family: "Palui", sans-serif;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.profile-edit-btn:hover {
+  background: rgba(19, 200, 176, 0.08);
+  color: var(--accent-light);
+}
+
+/* CONTENT */
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ТАБЫ */
+.profile-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(19, 200, 176, 0.2);
+  margin-bottom: 24px;
+}
+
+.profile-tab {
+  font-family: "Ponter", sans-serif;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-dark);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  margin-bottom: -1px;
+}
+
+.profile-tab:hover { color: var(--accent); }
+
+.profile-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* EMPTY STATE */
+.profile-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  gap: 16px;
+  text-align: center;
+}
+
+.profile-empty-icon {
+  font-size: 48px;
+  opacity: 0.3;
+}
+
+.profile-empty-title {
+  font-family: "Palui", sans-serif;
+  font-size: 20px;
+  color: var(--accent-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.profile-empty-sub {
+  font-family: "Ponter", sans-serif;
+  font-size: 13px;
+  color: rgba(19, 200, 176, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
+.profile-find-btn {
+  margin-top: 8px;
+  padding: 12px 32px;
+  font-family: "Palui", sans-serif;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.profile-find-btn:hover {
+  background: rgba(19, 200, 176, 0.08);
+  color: var(--accent-light);
+}
+
+/* LOADING / NOT FOUND */
+.profile-loading,
+.profile-not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 0;
+  gap: 20px;
+  font-family: "Palui", sans-serif;
+  font-size: 16px;
+  color: var(--accent-dark);
+  letter-spacing: 0.05em;
+}
+
+.profile-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 2px solid rgba(19, 200, 176, 0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.profile-back-btn {
+  font-family: "Ponter", sans-serif;
+  font-size: 13px;
+  color: var(--accent-dark);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.profile-back-btn:hover { color: var(--accent); }
+
+/* ADAPTIVE */
+@media (max-width: 1024px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+  .profile-sidebar {
+    position: static;
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-username { font-size: 20px; }
+  .profile-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}

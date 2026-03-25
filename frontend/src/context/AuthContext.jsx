@@ -1,63 +1,45 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import client from '../api/client'
+import { authApi } from '../api/auth'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [token, setToken] = useState(localStorage.getItem('token'))
 
   // При загрузке — проверяем токен
   useEffect(() => {
+    const token = localStorage.getItem('moonrise_token')
     if (token) {
-      fetchUser(token)
+      authApi.getMe(token)
+        .then(data => setUser(data))
+        .catch(() => {
+          localStorage.removeItem('moonrise_token')
+          setUser(null)
+        })
+        .finally(() => setLoading(false))
     } else {
       setLoading(false)
     }
-  }, [token])
+  }, [])
 
-  async function fetchUser(jwt) {
-    try {
-      const response = await client.get(`/auth/me?token=${jwt}`)
-      setUser(response.data)
-    } catch (error) {
-      console.error('Failed to fetch user:', error)
-      localStorage.removeItem('token')
-      setToken(null)
-      setUser(null)
-    } finally {
-      setLoading(false)
-    }
+  const login = (token, userData) => {
+    localStorage.setItem('moonrise_token', token)
+    setUser(userData)
   }
 
-  function login() {
-    // Редирект на Discord OAuth
-    window.location.href = 'http://localhost:8000/auth/discord'
-  }
-
-  function logout() {
-    localStorage.removeItem('token')
-    setToken(null)
+  const logout = () => {
+    localStorage.removeItem('moonrise_token')
     setUser(null)
   }
 
-  function saveToken(newToken) {
-    localStorage.setItem('token', newToken)
-    setToken(newToken)
-  }
-
   return (
-    <AuthContext.Provider value={{ user, loading, token, login, logout, saveToken }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider')
-  }
-  return context
+  return useContext(AuthContext)
 }

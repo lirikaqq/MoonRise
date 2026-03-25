@@ -1,19 +1,13 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
 import os
-from pathlib import Path
 
 
 class Settings(BaseSettings):
-    """Настройки приложения из .env"""
-    
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://moonrise:moonrise_secret@localhost:5432/moonrise"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/moonrise"
     
-    # JWT
-    JWT_SECRET: str = "your-super-secret-key-change-me"
-    JWT_ALGORITHM: str = "HS256"
-    JWT_EXPIRE_MINUTES: int = 10080  # 7 дней
+    # Redis
+    REDIS_URL: str = "redis://localhost:6379/0"
     
     # Discord OAuth2
     DISCORD_CLIENT_ID: str = ""
@@ -23,9 +17,16 @@ class Settings(BaseSettings):
     # Frontend
     FRONTEND_URL: str = "http://localhost:5173"
     
+    # JWT
+    SECRET_KEY: str = "super_secret_key"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080
+    
+    # Overfast API
+    OVERFAST_API_URL: str = "https://overfast-api.tekrop.fr"
+    
     class Config:
-        # Ищем .env в корне проекта (на уровень выше backend)
-        env_file = Path(__file__).resolve().parent.parent.parent / ".env"
+        env_file = ".env"
         extra = "allow"
 
 
