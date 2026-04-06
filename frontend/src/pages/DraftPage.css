@@ -1,0 +1,230 @@
+/* frontend/src/pages/DraftPage.css */
+
+.draft-page {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 1rem;
+    height: calc(100vh - 1rem); /* Высота экрана минус паддинги */
+    display: flex;
+    flex-direction: column;
+}
+
+.draft-main-area {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Левая колонка в 2 раза больше правой */
+    gap: 1rem;
+    flex-grow: 1; /* Занимает все оставшееся место */
+    min-height: 0; /* Важно для правильной работы overflow */
+}
+
+/* Стили для дочерних компонентов */
+.draft-pool-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.draft-teams-container {
+    height: 100%;
+    overflow-y: auto; /* Позволяет прокручивать команды, если они не влезают */
+}
+
+/* Стили для заглушек (потом заменим на реальные) */
+.draft-component-placeholder {
+    background-color: var(--block-bg, #111B25);
+    border: 1px solid var(--border, #13c8b0);
+    border-radius: 8px;
+    padding: 1rem;
+    color: var(--text-soft);
+}
+
+.draft-teams-container .draft-component-placeholder {
+     /* Чтобы показать, как работает скролл */
+    min-height: 120vh;
+}
+
+/* --- Стили для Пула Игроков --- */
+.player-pool-header {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap; /* Для мобилок */
+    gap: 1rem;
+    align-items: center;
+}
+
+.player-pool-filters {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.player-pool-filters button {
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid #3a5160;
+    color: var(--text-soft);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+}
+
+.player-pool-filters button:hover {
+    background-color: #3a5160;
+}
+
+.player-pool-filters button.active {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+}
+
+.player-pool-search {
+    flex-grow: 1; /* Занимает оставшееся место */
+    min-width: 200px;
+}
+
+.player-pool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    overflow-y: auto;
+    padding-right: 0.5rem; /* Чтобы скроллбар не прилипал */
+}
+
+/* Стили для карточки игрока */
+.player-card {
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid #3a5160;
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.player-card-header {
+    text-align: center;
+}
+
+.player-card-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-soft);
+}
+
+.player-card-rating {
+    font-size: 0.9rem;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.player-card-roles {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.player-card-button {
+    margin-top: 0.5rem;
+    width: 100%;
+    background-color: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.player-card-button:hover {
+    background-color: var(--accent-dark);
+}
+
+.player-card-button:disabled {
+    background-color: #3a5160;
+    color: #777;
+    cursor: not-allowed;
+}
+
+/* --- Стили для Таймера и Статус-бара --- */
+.draft-top-bar {
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.draft-status-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.draft-turn-label {
+    font-size: 0.9rem;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.draft-current-team {
+    font-family: 'Palui', sans-serif;
+    font-size: 2rem;
+    color: var(--accent-light);
+    line-height: 1;
+}
+
+.draft-current-captain {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.draft-timer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.draft-timer-value {
+    font-family: 'Digits', monospace; /* Если у тебя есть шрифт для цифр */
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: var(--accent);
+    line-height: 1;
+    text-shadow: 0 0 10px rgba(19, 200, 176, 0.5);
+    transition: color 0.3s ease;
+}
+
+/* Класс для таймера, когда остается мало времени (меньше 15 сек) */
+.draft-timer-warning {
+    color: #ff4d4d;
+    text-shadow: 0 0 15px rgba(255, 77, 77, 0.6);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.draft-my-turn-badge {
+    background-color: var(--accent);
+    color: var(--bg);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+    animation: pulse 2s infinite;
+}

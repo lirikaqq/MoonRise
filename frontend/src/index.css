@@ -1,11 +1,101 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* =================================
+   src/index.css  (НОВЫЙ ГЛОБАЛЬНЫЙ ФАЙЛ)
+   ================================= */
+
+/* --- ШРИФТЫ (теперь они будут везде) --- */
+@font-face {
+  font-family: "Palui";
+  src: url("/assets/fonts/PaluiSPDemo-Bold.otf") format("opentype");
 }
 
-html,
-body,
-#root {
-  min-height: 100%;
+@font-face {
+  font-family: "Ponter";
+  src: url("/assets/fonts/Ponter.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Digits";
+  src: url("/assets/fonts/ST-SimpleSquare.otf") format("opentype");
+}
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/Montserrat-Medium.ttf') format('truetype');
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/Montserrat-Bold.ttf') format('truetype');
+  font-weight: 700;
+}
+
+/* --- ГЛОБАЛЬНЫЕ ЦВЕТОВЫЕ ПЕРЕМЕННЫЕ (теперь они будут везде) --- */
+:root {
+  /* Основная палитра */
+  --bg: #13242d;
+  --header-bg: #101d27;
+  --panel: rgba(16, 39, 47, 0.84);
+  --accent: #13c8b0;
+  --accent-dark: #13ad91;
+  --accent-light: #b7ffb2;
+  --border: rgba(19, 200, 176, 0.8);
+  --text-soft: rgba(183, 255, 178, 0.92);
+
+  /* Переменные для страницы турнира (из Figma) */
+  --block-bg: #111B25;
+  --button-bg: #23423F;
+  --tournament-accent: #13AD91;
+  --tournament-accent-light: #A7F2A2;
+
+  /* Глобальные размеры */
+  --header-height: 126px;
+  --container: 1240px;
+}
+
+/* --- БАЗОВЫЕ СТИЛИ ДЛЯ ВСЕГО САЙТА --- */
+* { 
+  box-sizing: border-box; 
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg);
+  color: var(--text-soft);
+  font-family: 'Ponter', sans-serif;
+  overflow-x: hidden;
+}
+
+a { 
+  text-decoration: none; 
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Стили для кастомных форм в админке */
+.form-input, .form-select, .form-textarea {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  color: var(--text-soft);
+  background-color: #1a2c38; /* Чуть светлее фона */
+  border: 1px solid #3a5160; /* Темная рамка */
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(19, 200, 176, 0.3);
+}
+
+/* Стили для date-time инпутов */
+.form-input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
 }

@@ -1,0 +1,258 @@
+/* src/components/tournament/bracket/Bracket.css */
+
+/* === ПЕРЕМЕННЫЕ (Синхронизировано с index.css) === */
+:root {
+  --bracket-bg-card: var(--block-bg, #111B25);
+  --bracket-bg-card-hover: var(--button-bg, #23423F);
+  --bracket-border-color: var(--tournament-accent, #13AD91);
+  --bracket-text-default: var(--tournament-accent, #13AD91);
+  --bracket-text-win: var(--tournament-accent-light, #A7F2A2);
+  
+  /* Подключаем правильные шрифты из твоего index.css */
+  --bracket-font-primary: 'Ponter', sans-serif;
+  --bracket-font-secondary: 'Arial', sans-serif;
+  --bracket-font-score: 'Digits', sans-serif; /* <-- ИСПРАВЛЕНО ЗДЕСЬ */
+}
+
+/* === ОБЩЕЕ === */
+.bracket-section {
+  width: 100%;
+  max-width: 1120px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+}
+
+/* === СУБ-ВКЛАДКИ (ГРУППЫ / ПЛЕЙ-ОФФ) === */
+.bracket-tabs-container {
+  display: inline-flex; /* Чтобы не растягивалось на 100% ширины */
+  height: 45px;
+  min-width: 280px; /* Минимальная ширина по ТЗ */
+  border-bottom: 2px solid var(--bracket-border-color);
+  margin-bottom: 31px;
+  gap: 10px; /* Даем вкладкам немного дышать */
+}
+
+.bracket-tab {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 15px;
+  font-family: var(--bracket-font-score);
+  font-size: 19px;
+  text-transform: uppercase;
+  white-space: nowrap; /* ЗАПРЕЩАЕМ ПЕРЕНОС ТЕКСТА */
+  color: transparent;
+  -webkit-text-stroke: 1px var(--bracket-text-default);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease-in-out;
+  letter-spacing: 0.05em;
+}
+
+.bracket-tab.active {
+  color: var(--bracket-text-default); /* Убрали кислотный фон, сделали текст нормальным */
+  -webkit-text-stroke: 0px;
+  background-color: transparent; 
+}
+
+.bracket-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background-color: var(--bracket-text-win);
+}
+
+/* === ЗАГОЛОВКИ ГРУПП И РАУНДОВ === */
+.group-header {
+  display: flex;
+  align-items: center;
+  font-family: var(--bracket-font-primary);
+  font-size: 18px;
+  color: var(--bracket-text-default);
+  margin-bottom: 22px;
+  letter-spacing: 0.05em;
+}
+
+.group-marker {
+  width: 10px;
+  height: 10px;
+  background-color: var(--bracket-text-default);
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.round-header {
+  font-family: var(--bracket-font-primary);
+  font-size: 18px;
+  color: var(--bracket-text-default);
+  text-align: center;
+  margin-bottom: 9px;
+  letter-spacing: 0.05em;
+}
+
+/* === СЕТКА ГРУПП (БЛОК 5) === */
+.bracket-grid {
+  display: flex;
+  gap: 14px;
+}
+
+.bracket-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 175px;
+}
+
+/* === КАРТОЧКА МАТЧА (БЛОК 4) - ЧИСТЫЙ CSS БЕЗ SVG === */
+.match-card {
+  width: 175px;
+  height: 50px;
+  position: relative;
+  /* Наружный фон = цвет рамки (13AD91) */
+  background-color: var(--bracket-border-color); 
+  /* Обрезаем углы у рамки по ТЗ (12px) */
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  z-index: 2;
+  cursor: default;
+}
+
+.match-card:hover .match-card-inner {
+  background-color: var(--bracket-bg-card-hover);
+}
+
+.match-card-inner {
+  position: absolute;
+  /* inset: 1px создает ту самую рамку толщиной 1px */
+  inset: 1px; 
+  background-color: var(--bracket-bg-card);
+  /* Обрезаем внутренний фон на 1px меньше (11px) */
+  clip-path: polygon(11px 0, 100% 0, 100% calc(100% - 11px), calc(100% - 11px) 100%, 0 100%, 0 11px);
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.2s;
+}
+
+.match-row {
+  height: 24px; 
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.match-row:first-child {
+  border-bottom: 1px solid var(--bracket-border-color);
+}
+
+.team-name {
+  font-family: var(--bracket-font-secondary);
+  font-size: 10px;
+  padding-left: 12px;
+  color: var(--bracket-text-default);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+  font-weight: bold;
+}
+
+.team-score {
+  font-family: var(--bracket-font-score);
+  font-size: 12px; /* Чуть увеличим для читаемости, пока нет шрифта */
+  width: 22px;
+  height: 100%; /* Занимаем всю высоту строки */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--bracket-text-default);
+}
+
+.team-name.winner, .team-score.winner {
+  color: var(--bracket-text-win);
+}
+
+.match-card.empty .team-name { color: rgba(19, 173, 145, 0.5); }
+.match-card.empty .team-score { opacity: 0; }
+
+/* === ПЛЕЙ-ОФФ И КОННЕКТОРЫ (ИДЕАЛЬНАЯ МАТЕМАТИКА) === */
+.playoff-container {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  padding-top: 10px;
+}
+
+.playoff-grid {
+  display: flex;
+  gap: 60px;
+}
+
+.playoff-col {
+  width: 175px;
+  flex-shrink: 0;
+}
+
+.playoff-col-cards {
+  position: relative;
+  height: 290px;
+  width: 100%;
+}
+
+.playoff-match-wrapper {
+  position: absolute;
+  width: 175px;
+  z-index: 1;
+}
+
+/* 1. Линия ВХОДЯЩАЯ слева (для Semi-Final и Grand Final) */
+.playoff-match-wrapper.is-child::before {
+  content: '';
+  position: absolute;
+  left: -30px;
+  top: 24px; /* Строго центр: 50/2 - 1px толщины */
+  width: 30px;
+  height: 2px;
+  background-color: var(--bracket-text-win);
+}
+
+/* 2. Линия ВЫХОДЯЩАЯ от ВЕРХНЕЙ карточки в паре (Угол ┐) */
+.playoff-match-wrapper.is-top-pair::after {
+  content: '';
+  position: absolute;
+  right: -30px;
+  top: 24px;
+  width: 30px;
+  border-top: 2px solid var(--bracket-text-win);
+  border-right: 2px solid var(--bracket-text-win);
+  box-sizing: border-box;
+}
+
+/* 3. Линия ВЫХОДЯЩАЯ от НИЖНЕЙ карточки в паре (Угол ┘) */
+.playoff-match-wrapper.is-bottom-pair::after {
+  content: '';
+  position: absolute;
+  right: -30px;
+  bottom: 24px; /* Отсчет от низа карточки */
+  width: 30px;
+  border-bottom: 2px solid var(--bracket-text-win);
+  border-right: 2px solid var(--bracket-text-win);
+  box-sizing: border-box;
+}
+
+/* 4. Высота углов (Они встречаются ровно посередине и накладываются на 2px) */
+
+/* 4. Динамическая высота углов (Передается из React) */
+.playoff-match-wrapper.is-top-pair::after,
+.playoff-match-wrapper.is-bottom-pair::after {
+  height: var(--connector-height, 42px);
+}
+
+/* Semi-Final -> Grand Final (Шаг 160px, значит половина пути = 80px) */
+.playoff-match-wrapper.lvl-2.is-top-pair::after,
+.playoff-match-wrapper.lvl-2.is-bottom-pair::after {
+  height: 82px;
+}

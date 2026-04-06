@@ -1,45 +1,41 @@
-import { useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import { authApi } from '../api/auth'
+// frontend/src/pages/AuthCallback.jsx
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function AuthCallback() {
-  const [searchParams] = useSearchParams()
-  const { login } = useAuth()
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   useEffect(() => {
-    const token = searchParams.get('token')
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
 
-    if (!token) {
-      navigate('/')
-      return
-    }
+    console.log('🔑 Token from URL:', token ? '✅ получен' : '❌ null');
 
-    // Получаем данные пользователя по токену
-    authApi.getMe(token)
-      .then(userData => {
-        login(token, userData)
-        navigate('/')
-      })
-      .catch(() => {
-        navigate('/')
-      })
-  }, [])
+    const handleAuth = async () => {
+      if (token) {
+        await login(token);  // ✅ ждём — user установится ДО navigate
+        navigate('/', { replace: true });
+      } else {
+        console.error('❌ No token in callback URL');
+        navigate('/');
+      }
+    };
+
+    handleAuth();
+  }, []); // eslint-disable-line
 
   return (
     <div style={{
       display: 'flex',
-      alignItems: 'center',
       justifyContent: 'center',
+      alignItems: 'center',
       height: '100vh',
-      background: '#13242d',
-      color: '#13c8b0',
-      fontFamily: 'Palui, sans-serif',
-      fontSize: '24px',
-      letterSpacing: '0.05em',
+      color: 'white',
+      fontSize: '1.2rem'
     }}>
-      АВТОРИЗАЦИЯ...
+      Авторизация...
     </div>
-  )
+  );
 }

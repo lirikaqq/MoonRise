@@ -1,63 +1,51 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
-# BattleTag схемы
-class BattleTagCreate(BaseModel):
-    """Добавить новый баттлтег."""
-    tag: str = Field(..., min_length=3, max_length=100)
+
+# --- BattleTag Schemas ---
+class BattleTagBase(BaseModel):
+    tag: str
     is_primary: bool = False
 
+class BattleTagCreate(BattleTagBase):
+    pass
 
-class BattleTagUpdate(BaseModel):
-    """Обновить баттлтег."""
-    tag: Optional[str] = None
-    is_primary: Optional[bool] = None
-
-
-class BattleTagResponse(BaseModel):
-    """Ответ с баттлтегом."""
+class BattleTagSchema(BattleTagBase):
     id: int
-    tag: str
-    is_primary: bool
-    created_at: datetime
+    user_id: int
 
     class Config:
         from_attributes = True
 
 
-# Профиль игрока схемы
-class PlayerProfileResponse(BaseModel):
-    """Полный профиль игрока."""
+# --- User Schemas ---
+class PlayerBase(BaseModel):
     id: int
+    username: str
+    avatar_url: Optional[str] = None
+    role: Optional[str] = None        # Добавили, чтобы можно было отображать бейдж
+    division: Optional[str] = None    # Добавили для карточки
+    is_ghost: bool = False            # 👇 ДОБАВИЛИ, чтобы фронт знал о призраках
+    
+    class Config:
+        from_attributes = True
+
+
+class PlayerCreate(BaseModel):
     discord_id: str
     username: str
-    avatar_url: Optional[str]
-    role: str
-    division: Optional[str]
-    is_banned: bool
-    reputation_score: int
-    battletags: List[BattleTagResponse]
-    created_at: datetime
-    updated_at: datetime
+    avatar_url: Optional[str] = None
 
+
+class PlayerProfileResponse(PlayerBase):
+    discord_id: Optional[str] = None  # 👇 ИСПРАВЛЕНО: Теперь может быть None
+    battletags: List[BattleTagSchema] = []
+    
     class Config:
         from_attributes = True
 
 
-class PlayerProfileUpdate(BaseModel):
-    """Обновить профиль."""
+class PlayerUpdate(BaseModel):
+    primary_battletag: Optional[str] = None
     division: Optional[str] = None
-
-
-class PlayerShortResponse(BaseModel):
-    """Короткий профиль игрока."""
-    id: int
-    discord_id: str
-    username: str
-    avatar_url: Optional[str]
-    role: str
-    division: Optional[str]
-
-    class Config:
-        from_attributes = True

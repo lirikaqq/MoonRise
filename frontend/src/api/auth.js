@@ -6,7 +6,7 @@ const API_URL = '/api'
 export const authApi = {
   // Логин через Discord - прямой редирект
   getDiscordLoginUrl: () => {
-    return 'http://localhost:8000/auth/discord'
+    return 'http://localhost:8000/api/auth/discord'
   },
 
   // Получить данные пользователя через proxy

@@ -1,6 +1,6 @@
-from sqlalchemy import Column, String, Integer, DateTime, Boolean, ForeignKey, func
+from sqlalchemy import Column, String, Integer, DateTime, Boolean, ForeignKey, Text
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from app.database import Base
 
 
@@ -9,25 +9,36 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    discord_id = Column(String(50), unique=True, nullable=False, index=True)
+    
+    # Сделано nullable=True, чтобы разрешить создание "ghost" профилей без Discord
+    discord_id = Column(String(50), unique=True, nullable=True, index=True) 
+    
     username = Column(String(255), nullable=False)
+    display_name = Column(String(255), nullable=True)
     avatar_url = Column(String(500), nullable=True)
 
-    # Профиль
-    role = Column(String(50), default="player", nullable=False)  # player, moderator, admin
-    division = Column(String(50), nullable=True)  # Gold, Silver, Bronze и т.д.
+    role = Column(String(50), default="player", nullable=False)
+    division = Column(String(50), nullable=True)
 
-    # Статус
+    # Игровые роли Overwatch
+    primary_role = Column(String(50), nullable=True)
+    secondary_role = Column(String(50), nullable=True)
+    
+    # Поле для "призрачных" профилей, созданных скриптом
+    is_ghost = Column(Boolean, default=False, nullable=False)
+
+    # Профиль
+    bio = Column(Text, nullable=True)
+
     is_banned = Column(Boolean, default=False, nullable=False)
     ban_reason = Column(String(500), nullable=True)
-    ban_until = Column(DateTime, nullable=True)
+    ban_until = Column(DateTime(timezone=True), nullable=True)
 
-    # Репутация (опционально)
     reputation_score = Column(Integer, default=0, nullable=False)
 
-    # Временные метки
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    # Все даты теперь "aware" с часовым поясом UTC
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
     # Связи
     battletags = relationship("BattleTag", back_populates="user", cascade="all, delete-orphan")
@@ -42,12 +53,11 @@ class BattleTag(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    tag = Column(String(100), nullable=False)  # например: Player#12345
-    is_primary = Column(Boolean, default=False, nullable=False)  # основной баттлтег
+    tag = Column(String(100), nullable=False)
+    is_primary = Column(Boolean, default=False, nullable=False)
 
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
-    # Связь обратно к User
     user = relationship("User", back_populates="battletags")
 
     def __repr__(self):

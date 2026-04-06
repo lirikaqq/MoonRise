@@ -1,73 +1,95 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import client from '../../api/client'
+
+const DEFAULT_SETTINGS = {
+  title: 'UPCOMING TOURNAMENT',
+  date_text: '08 - 09 MARCH',
+  description: 'ТУРНИР, В КОТОРОМ КОМАНДЫ ФОРМИРУЮТСЯ С ПОМОЩЬЮ ИНСТРУМЕНТОВ ДЛЯ БАЛАНСА КОМАНД. ОСНОВНОЙ ПРИНЦИП ФОРМИРОВАНИЯ КОМАНД — БАЛАНС СРЕДНЕГО РЕЙТИНГА МЕЖДУ ВСЕМИ КОМАНДАМИ.',
+  logo_url: '/assets/images/tournament-mix-logo.png',
+  hero_image_url: '/assets/images/tournament-hero.png',
+  registration_text: 'REGISTRATION',
+  registration_url: '#',
+  info_text: 'INFO',
+  info_url: '#',
+  tournament_id: null,
+}
 
 export default function UpcomingTournamentSection() {
-  const [settings, setSettings] = useState(null)
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS)
 
   useEffect(() => {
-    fetch('/api/homepage/settings')
-      .then(r => r.json())
-      .then(data => setSettings(data))
-      .catch(() => {})
+    client.get('/homepage/settings')
+      .then(r => {
+        console.log('📋 Homepage settings raw:', r.data)
+        setSettings(prev => {
+          const merged = { ...prev }
+          Object.keys(r.data).forEach(key => {
+            if (r.data[key] !== null && r.data[key] !== undefined && r.data[key] !== '') {
+              merged[key] = r.data[key]
+            }
+          })
+          console.log('📋 Merged settings:', merged)
+          return merged
+        })
+      })
+      .catch(err => {
+        console.warn('⚠️ Homepage settings failed, using defaults:', err.response?.status)
+      })
   }, [])
 
-  // Пока загружается — показываем захардкоженный вариант
-  const s = settings || {
-    title: 'UPCOMING TOURNAMENT',
-    date_text: '08 - 09 MARCH',
-    description: 'ТУРНИР, В КОТОРОМ КОМАНДЫ ФОРМИРУЮТСЯ С ПОМОЩЬЮ ИНСТРУМЕНТОВ ДЛЯ БАЛАНСА КОМАНД. ОСНОВНОЙ ПРИНЦИП ФОРМИРОВАНИЯ КОМАНД — БАЛАНС СРЕДНЕГО РЕЙТИНГА МЕЖДУ ВСЕМИ КОМАНДАМИ.',
-    logo_url: '/assets/images/tournament-mix-logo.png',
-    hero_image_url: '/assets/images/tournament-hero.png',
-    registration_text: 'REGISTRATION',
-    registration_url: '#',
-    info_text: 'INFO',
-    info_url: '#',
-    tournament_id: null,
-  }
+  const regLink = settings.tournament_id
+    ? `/tournaments/${settings.tournament_id}`
+    : settings.registration_url || '#'
 
-  const regLink = s.tournament_id ? `/tournaments/${s.tournament_id}` : s.registration_url
-  const infoLink = s.tournament_id ? `/tournaments/${s.tournament_id}` : s.info_url
+  const infoLink = settings.tournament_id
+    ? `/tournaments/${settings.tournament_id}`
+    : settings.info_url || '#'
 
   return (
     <section className="tournament-section">
       <div className="tournament-card reveal">
 
+        {/* TOP BAR */}
         <div className="tournament-top reveal reveal-delay-1">
-          <div className="tournament-dot"></div>
-          <span className="tournament-label">{s.title}</span>
-          <div className="tournament-line"></div>
-          <span className="tournament-date">{s.date_text}</span>
+          <div className="tournament-dot" />
+          <span className="tournament-label">{settings.title}</span>
+          <div className="tournament-line" />
+          <span className="tournament-date">{settings.date_text}</span>
         </div>
 
+        {/* GRID: левая колонка + правая с персонажем */}
         <div className="tournament-grid">
+
+          {/* ЛЕВАЯ */}
           <div className="tournament-left">
-            {s.logo_url && (
-              <img
-                className="tournament-mix-logo reveal reveal-delay-2"
-                src={s.logo_url}
-                alt="Tournament Logo"
-              />
-            )}
+            <img
+              className="tournament-mix-logo reveal reveal-delay-2"
+              src={settings.logo_url}
+              alt="MoonRise MIX"
+            />
             <p className="tournament-description reveal reveal-delay-3">
-              {s.description}
+              {settings.description}
             </p>
             <div className="tournament-actions reveal reveal-delay-4">
               <Link to={regLink} className="cyber-button-secondary">
-                {s.registration_text}
+                {settings.registration_text || 'REGISTRATION'}
               </Link>
               <Link to={infoLink} className="cyber-button-outline">
-                {s.info_text}
+                {settings.info_text || 'INFO'}
               </Link>
             </div>
           </div>
 
+          {/* ПРАВАЯ — персонаж вровень с низом карточки */}
           <div className="tournament-right reveal reveal-delay-2">
-            {s.hero_image_url && (
-              <img src={s.hero_image_url} alt="Tournament Hero" />
-            )}
+            <img
+              src={settings.hero_image_url}
+              alt="Tournament Hero"
+            />
           </div>
-        </div>
 
+        </div>
       </div>
     </section>
   )

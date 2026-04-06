@@ -1,71 +1,51 @@
 import asyncio
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
+from app.database import async_session
 from app.models.user import User, BattleTag
-from app.database import Base
-from app.config import settings
 from datetime import datetime
 
-async def seed_database():
-    """Добавить тестовых пользователей в БД."""
-    
-    # Создаём engine
-    engine = create_async_engine(settings.DATABASE_URL, echo=False)
-    
-    # Создаём sessionmaker
-    AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-    
-    async with AsyncSessionLocal() as session:
-        # Создаём тестового пользователя
-        user1 = User(
-            discord_id="123456789",
-            username="TestPlayer1",
-            avatar_url="https://cdn.discordapp.com/avatars/123456789/default.png",
-            role="player",
-            division="Gold",
-            is_banned=False,
-            reputation_score=100,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-        )
+users_data = [
+    # Команда Ocelot
+    {"username": "Ocelot", "battletags": ["Ocelot#1234"]},
+    {"username": "Darknight", "battletags": ["Darknight#5678"]},
+    {"username": "NotNumb", "battletags": ["NotNumb#9101"]},
+    {"username": "Cranbereis", "battletags": ["Cranbereis#1112"]},
+    {"username": "Блеба", "battletags": ["Блеба#1314", "BJIe6a#1314"]},
+
+    # Команда PŪPREMŠKIY
+    {"username": "PŪPREMŠKIY", "battletags": ["PŪPREMŠKIY||2#1516"]},
+    {"username": "thofyb", "battletags": ["thofyb#1718"]},
+    {"username": "Kamikuje", "battletags": ["Kamikuje#1920"]},
+    {"username": "Squirrel", "battletags": ["Squirrel#2122"]},
+    {"username": "DEE", "battletags": ["DEE#2324"]},
+]
+
+async def seed_users_and_battletags():
+    async with async_session() as db:
+        print("🌱 Начинаем сидинг юзеров и BattleTag'ов...")
         
-        user2 = User(
-            discord_id="987654321",
-            username="TestPlayer2",
-            avatar_url="https://cdn.discordapp.com/avatars/987654321/default.png",
-            role="player",
-            division="Silver",
-            is_banned=False,
-            reputation_score=50,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-        )
-        
-        session.add(user1)
-        session.add(user2)
-        await session.flush()  # Чтобы получить ID
-        
-        # Добавляем баттлтеги
-        tag1 = BattleTag(
-            user_id=user1.id,
-            tag="TestPlayer1#1234",
-            is_primary=True,
-        )
-        
-        tag2 = BattleTag(
-            user_id=user2.id,
-            tag="TestPlayer2#5678",
-            is_primary=True,
-        )
-        
-        session.add(tag1)
-        session.add(tag2)
-        
-        await session.commit()
-        
-        print("✅ Database seeded with test users!")
-        print(f"   User 1: {user1.username} (ID: {user1.id})")
-        print(f"   User 2: {user2.username} (ID: {user2.id})")
+        for u_data in users_data:
+            user = User(
+                discord_id=f"fake_{u_data['username']}",
+                username=u_data['username'],
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            db.add(user)
+            await db.flush() # Получаем user.id
+
+            print(f"  - Создан юзер: {user.username} (ID: {user.id})")
+            
+            for i, tag_str in enumerate(u_data['battletags']):
+                btag = BattleTag(
+                    user_id=user.id,
+                    tag=tag_str,
+                    is_primary=(i == 0) # Первый тег — основной
+                )
+                db.add(btag)
+                print(f"    - Добавлен BattleTag: {btag.tag}")
+
+        await db.commit()
+        print("\n✅ Сидинг завершён!")
 
 if __name__ == "__main__":
-    asyncio.run(seed_database())
+    asyncio.run(seed_users_and_battletags())

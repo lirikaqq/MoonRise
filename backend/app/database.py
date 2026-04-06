@@ -1,30 +1,30 @@
+# backend/app/database.py
+
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base
 from app.config import settings
 
-# Создаём базовый класс для моделей
 Base = declarative_base()
 
-# Создаём async engine
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=False,
-    future=True,
 )
 
-# Создаём async sessionmaker
-AsyncSessionLocal = sessionmaker(
+async_session_maker = sessionmaker(
     engine,
     class_=AsyncSession,
     expire_on_commit=False,
 )
 
-async def get_db():
+async def get_db() -> AsyncSession:
     """Зависимость для получения сессии БД."""
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
+    async with async_session_maker() as session:
+        yield session
+
+async def init_db():
+    """Создает таблицы, если их нет."""
+    # Импорты лучше держать на уровне модулей, а не внутри функций,
+    # чтобы избежать циклических зависимостей. Alembic справится сам.
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)

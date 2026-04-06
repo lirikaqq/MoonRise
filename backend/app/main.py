@@ -1,55 +1,55 @@
-from fastapi import FastAPI, Depends
+# backend/app/main.py
+
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
-from app.database import get_db
-from app.routers import auth, players, overfast, tournaments, homepage
-import logging
+from contextlib import asynccontextmanager
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from app.database import init_db
+from app.routers import (
+    auth,
+    homepage,
+    matches,
+    players,
+    tournaments,
+    users,
+    draft, # Оставляем только один импорт модуля
+)
+from app.ws import draft_ws
 
-app = FastAPI(title="MoonRise API", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    print("Database and tables checked/created.")
+    yield
+
+app = FastAPI(
+    title="MoonRise API",
+    lifespan=lifespan
+)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=["http://localhost:5173"], # Убедись, что твой фронт на этом порту
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 
-app.include_router(auth.router)
-app.include_router(players.router)
-app.include_router(overfast.router)
-app.include_router(tournaments.router)
-app.include_router(homepage.router)
+# --- Подключаем роутеры ---
+# Для всех роутеров, кроме draft, мы можем задавать префикс здесь.
+app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
+app.include_router(homepage.router, prefix="/api/homepage", tags=["Homepage"])
+app.include_router(matches.router, prefix="/api/matches", tags=["Matches"])
+app.include_router(players.router, prefix="/api/players", tags=["Players"])
+app.include_router(tournaments.router, prefix="/api/tournaments", tags=["Tournaments"])
+app.include_router(users.router, prefix="/api/users", tags=["Users"])
+app.include_router(draft_ws.router)
+app.include_router(draft.public_router)
+
+# ДЛЯ DRAFT РОУТЕРА ПРЕФИКС НЕ УКАЗЫВАЕМ, т.к. он уже есть в draft.py
+app.include_router(draft.router)
 
 
-@app.on_event("startup")
-async def startup():
-    logger.info("🚀 MoonRise API starting...")
-
-
-@app.on_event("shutdown")
-async def shutdown():
-    logger.info("🛑 MoonRise API shutting down...")
-
-
-@app.get("/")
-async def root():
-    return {"status": "MoonRise API is running 🌙", "version": "1.0.0", "docs": "/docs"}
-
-
-@app.get("/health")
-async def health_check(db: AsyncSession = Depends(get_db)):
-    try:
-        await db.execute(text("SELECT 1"))
-        return {"status": "healthy", "database": "connected"}
-    except Exception as e:
-        return {"status": "unhealthy", "error": str(e)}
+@app.get("/", tags=["Root"])
+async def read_root():
+    return {"message": "Welcome to MoonRise API!"}

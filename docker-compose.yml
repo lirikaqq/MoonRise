@@ -5,15 +5,15 @@ services:
     container_name: moonrise-postgres
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: moonrise
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -42,17 +42,9 @@ services:
     restart: always
     ports:
       - "8000:8000"
-    environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/moonrise
-      REDIS_URL: redis://redis:6379/0
-      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
-      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
-      DISCORD_REDIRECT_URI: http://localhost:8000/auth/discord/callback
-      FRONTEND_URL: http://localhost:5173
-      SECRET_KEY: ${SECRET_KEY:-super_secret_key_change_me}
-      ALGORITHM: HS256
-      ACCESS_TOKEN_EXPIRE_MINUTES: 10080
-      OVERFAST_API_URL: https://overfast-api.tekrop.fr
+    # Этот блок говорит Docker Compose загрузить переменные из .env файла
+    env_file:
+      - .env
     volumes:
       - ./backend:/app
     depends_on:
@@ -70,6 +62,8 @@ services:
     restart: always
     ports:
       - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     volumes:
       - ./frontend:/app
       - /app/node_modules

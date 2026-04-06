@@ -1,158 +1,108 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
-from app.models.user import User, BattleTag
-from app.schemas.player import BattleTagCreate
-from app.services.overfast import OverfastService
-from fastapi import HTTPException
-import logging
+from sqlalchemy import select, delete, func
+from sqlalchemy.orm import selectinload, joinedload
+from typing import List, Optional
+from datetime import datetime
 
-logger = logging.getLogger(__name__)
+from app.models.user import User
+from app.models.tournament import Tournament, TournamentParticipant
+from app.models.match import MatchPlayer, MatchPlayerHero  # <-- Импорты добавлены
+from app.schemas.player import PlayerUpdate
 
 
 class PlayerService:
-    """Сервис для работы с профилями игроков."""
 
     @staticmethod
-    async def get_player_by_id(db: AsyncSession, player_id: int) -> User:
-        """Получить игрока по ID с баттлтегами."""
+    async def get_all_players(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[User]:
+        result = await db.execute(
+            select(User)
+            .order_by(User.username)
+            .offset(skip)
+            .limit(limit)
+        )
+        return result.scalars().all()
+
+    @staticmethod
+    async def get_player_profile(db: AsyncSession, player_id: int) -> Optional[User]:
         result = await db.execute(
             select(User)
             .options(selectinload(User.battletags))
             .where(User.id == player_id)
         )
-        player = result.scalar_one_or_none()
-        
-        if not player:
-            raise HTTPException(status_code=404, detail="Player not found")
-        
-        return player
+        return result.scalar_one_or_none()
 
     @staticmethod
-    async def get_player_by_discord_id(db: AsyncSession, discord_id: str) -> User:
-        """Получить игрока по Discord ID."""
-        result = await db.execute(
-            select(User)
-            .options(selectinload(User.battletags))
-            .where(User.discord_id == discord_id)
-        )
-        player = result.scalar_one_or_none()
-        
+    async def get_player_tournaments(db: AsyncSession, player_id: int) -> list:
+        # Убедимся, что игрок существует
+        player = await db.get(User, player_id)
         if not player:
-            raise HTTPException(status_code=404, detail="Player not found")
-        
-        return player
+            return []
 
-    @staticmethod
-    async def add_battletag(db: AsyncSession, player_id: int, tag_data: BattleTagCreate) -> dict:
-        """Добавить баттлтег и подтянуть данные из Overfast API."""
-        # Проверяем что игрок существует
-        result = await db.execute(select(User).where(User.id == player_id))
-        player = result.scalar_one_or_none()
-        
-        if not player:
-            raise HTTPException(status_code=404, detail="Player not found")
-        
-        # Проверяем есть ли уже баттлтеги
         result = await db.execute(
-            select(BattleTag).where(BattleTag.user_id == player_id).limit(1)
+            select(Tournament, TournamentParticipant)
+            .join(TournamentParticipant, Tournament.id == TournamentParticipant.tournament_id)
+            .where(TournamentParticipant.user_id == player_id)
+            .order_by(Tournament.start_date.desc())
         )
-        existing_tag = result.scalar_one_or_none()
         
-        is_primary = tag_data.is_primary or not existing_tag
+        tournaments_data = []
+        for tournament, participant in result.all():
+            tournaments_data.append({
+                "tournament_id": tournament.id,
+                "title": tournament.title,
+                "format": tournament.format,
+                "status": tournament.status,
+                "start_date": tournament.start_date.isoformat(),
+                "cover_url": tournament.cover_url,
+                "participant_status": participant.status,
+                "is_allowed": participant.is_allowed,
+                "checked_in": bool(participant.checkedin_at)
+            })
+        return tournaments_data
+    
+    @staticmethod
+    async def update_player(db: AsyncSession, user_id: int, data: PlayerUpdate) -> User:
+        user = await db.get(User, user_id)
+        if not user:
+            return None # Обработка в роутере
         
-        # Если новый основной — сбрасываем старый
-        if is_primary:
-            result = await db.execute(
-                select(BattleTag).where(
-                    BattleTag.user_id == player_id,
-                    BattleTag.is_primary == True
+        update_data = data.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(user, key, value)
+        
+        user.updated_at = datetime.utcnow()
+        await db.commit()
+        await db.refresh(user)
+        return user
+
+    # 👇 НОВЫЙ МЕТОД 👇
+    @staticmethod
+    async def delete_player(db: AsyncSession, player_id: int) -> Optional[User]:
+        """Полностью удаляет игрока и всю связанную с ним статистику."""
+        player = await db.get(User, player_id)
+        if not player:
+            return None
+
+        # Шаг 1: Удаляем статистику по героям игрока во всех матчах.
+        # Это нужно делать вручную, т.к. прямой связи с User нет (через MatchPlayer).
+        await db.execute(
+            delete(MatchPlayerHero).where(
+                MatchPlayerHero.match_player_id.in_(
+                    select(MatchPlayer.id).where(MatchPlayer.user_id == player_id)
                 )
             )
-            old_primary = result.scalar_one_or_none()
-            if old_primary:
-                old_primary.is_primary = False
-        
-        # Создаём баттлтег
-        new_tag = BattleTag(
-            user_id=player_id,
-            tag=tag_data.tag,
-            is_primary=is_primary
         )
-        db.add(new_tag)
-        
-        # Подтягиваем данные из Overfast API
-        overfast_data = None
-        try:
-            summary = await OverfastService.get_player_summary(tag_data.tag)
-            if summary:
-                overfast_data = OverfastService.extract_rank_info(summary)
-                logger.info(f"🎮 Overfast data for {tag_data.tag}: {overfast_data}")
-        except Exception as e:
-            logger.warning(f"⚠️ Could not fetch Overfast data: {e}")
-        
-        await db.commit()
-        await db.refresh(new_tag)
-        
-        return {
-            "battletag": new_tag,
-            "overfast_data": overfast_data
-        }
 
-    @staticmethod
-    async def delete_battletag(db: AsyncSession, player_id: int, tag_id: int) -> dict:
-        """Удалить баттлтег."""
-        result = await db.execute(
-            select(BattleTag).where(
-                BattleTag.id == tag_id,
-                BattleTag.user_id == player_id
-            )
+        # Шаг 2: Удаляем статистику игрока во всех матчах.
+        # Это нужно делать вручную, т.к. в модели User->MatchPlayer стоит ondelete="SET NULL".
+        await db.execute(
+            delete(MatchPlayer).where(MatchPlayer.user_id == player_id)
         )
-        tag = result.scalar_one_or_none()
         
-        if not tag:
-            raise HTTPException(status_code=404, detail="BattleTag not found")
-        
-        if tag.is_primary:
-            result = await db.execute(
-                select(BattleTag).where(
-                    BattleTag.user_id == player_id,
-                    BattleTag.id != tag_id
-                ).limit(1)
-            )
-            next_tag = result.scalar_one_or_none()
-            if next_tag:
-                next_tag.is_primary = True
-        
-        await db.delete(tag)
+        # Шаг 3: Удаляем самого игрока.
+        # SQLAlchemy благодаря cascade='all, delete-orphan' и ondelete='CASCADE' 
+        # в моделях User и Tournament позаботится об остальном 
+        # (BattleTags, TournamentParticipant и т.д.).
+        await db.delete(player)
         await db.commit()
-        return {"message": "BattleTag deleted successfully"}
-
-    @staticmethod
-    async def set_primary_battletag(db: AsyncSession, player_id: int, tag_id: int) -> BattleTag:
-        """Сделать баттлтег основным."""
-        result = await db.execute(
-            select(BattleTag).where(
-                BattleTag.id == tag_id,
-                BattleTag.user_id == player_id
-            )
-        )
-        tag = result.scalar_one_or_none()
-        
-        if not tag:
-            raise HTTPException(status_code=404, detail="BattleTag not found")
-        
-        result = await db.execute(
-            select(BattleTag).where(
-                BattleTag.user_id == player_id,
-                BattleTag.is_primary == True
-            )
-        )
-        old_primary = result.scalar_one_or_none()
-        if old_primary:
-            old_primary.is_primary = False
-        
-        tag.is_primary = True
-        await db.commit()
-        await db.refresh(tag)
-        return tag
+        return player

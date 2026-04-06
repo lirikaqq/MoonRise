@@ -1,9 +1,10 @@
 from .player import (
-    BattleTagCreate,
-    BattleTagResponse,
+    PlayerCreate,
     PlayerProfileResponse,
-    PlayerProfileUpdate,
-    PlayerShortResponse,
+    PlayerUpdate,
+    PlayerBase,
+    BattleTagCreate,
+    BattleTagSchema
 )
 from .tournament import (
     TournamentCreate,
@@ -14,10 +15,11 @@ from .tournament import (
 
 __all__ = [
     "BattleTagCreate",
-    "BattleTagResponse",
+    "BattleTagSchema",
+    "PlayerBase",
+    "PlayerCreate",
     "PlayerProfileResponse",
-    "PlayerProfileUpdate",
-    "PlayerShortResponse",
+    "PlayerUpdate",
     "TournamentCreate",
     "TournamentUpdate",
     "TournamentResponse",

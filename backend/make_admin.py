@@ -1,13 +1,20 @@
+# backend/make_admin.py
 import asyncio
-from app.database import AsyncSessionLocal
-from sqlalchemy import text
+from sqlalchemy import select
+from app.database import async_session_maker
+from app.models.user import User
 
+async def main():
+    username = input("Введите ваш точный никнейм (username) на сайте: ")
+    
+    async with async_session_maker() as db:
+        user = await db.scalar(select(User).where(User.username == username))
+        if user:
+            user.role = "admin"
+            await db.commit()
+            print(f"✅ УРА! Пользователь '{username}' теперь АДМИН!")
+        else:
+            print(f"❌ ОШИБКА: Пользователь '{username}' не найден. Вы точно авторизовались на сайте?")
 
-async def make_admin():
-    async with AsyncSessionLocal() as db:
-        await db.execute(text("UPDATE users SET role = 'admin' WHERE id = 3"))
-        await db.commit()
-        print("User 3 is now admin!")
-
-
-asyncio.run(make_admin())
+if __name__ == "__main__":
+    asyncio.run(main())

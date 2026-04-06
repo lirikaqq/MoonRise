@@ -1,52 +1,83 @@
-import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import Header from '../components/layout/Header'
-import Footer from '../components/layout/Footer'
-import './PlayerProfile.css'
+import { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom'; // Убедись что Link импортирован
+import { useAuth } from '../context/AuthContext';
+import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
+import { playersApi } from '../api/players';
+import './PlayerProfile.css';
+import PlayerMatchHistory from '../components/player/PlayerMatchHistory'; // Добавлен импорт
+
+function TournamentHistoryCard({ tournament }) {
+  const formattedDate = new Date(tournament.start_date).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric'
+  });
+
+  return (
+    <Link to={`/tournaments/${tournament.id}`} className="tournament-history-card">
+      <img
+        src={tournament.cover_url || '/assets/images/grid-bg.png'}
+        alt={tournament.title}
+        className="tournament-history-cover"
+      />
+      <div className="tournament-history-info">
+        <h4 className="tournament-history-title">{tournament.title}</h4>
+        <div className="tournament-history-meta">
+          <span>{formattedDate}</span>
+          <span>•</span>
+          <span>{tournament.format.toUpperCase()}</span>
+          <span>•</span>
+          <span>{tournament.participants_count} / {tournament.max_participants || '∞'}</span>
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 export default function PlayerProfile() {
-  const { id } = useParams()
-  const { user: currentUser } = useAuth()
-  const [player, setPlayer] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { id } = useParams();
+  const { user: currentUser } = useAuth();
+  const [player, setPlayer] = useState(null);
+  const [tournaments, setTournaments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true)
+    if (!id) return;
+
+    const loadData = async () => {
       try {
-        const token = localStorage.getItem('moonrise_token')
-        const res = await fetch(`/api/players/${id}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
-        })
-        if (!res.ok) throw new Error('Player not found')
-        const data = await res.json()
-        setPlayer(data)
+        setLoading(true);
+        const playerData = await playersApi.getById(id);
+        setPlayer(playerData);
+        
+        try {
+          const tournamentsData = await playersApi.getPlayerTournaments(id);
+          setTournaments(tournamentsData);
+        } catch {
+          setTournaments([]);
+        }
       } catch (err) {
-        setError(err.message)
+        setError(err.message);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    load()
-  }, [id])
+    };
 
-  const isOwnProfile = currentUser && currentUser.id === parseInt(id)
+    loadData();
+  }, [id]);
 
-  if (loading) {
+  const isOwnProfile = currentUser && currentUser.id === parseInt(id);
+
+  if (!id || (loading && !player)) {
     return (
       <div className="profile-page">
         <Header />
         <main className="profile-main">
-          <div className="profile-loading">
-            <div className="profile-loading-spinner"></div>
-            <span>LOADING...</span>
-          </div>
+          <div style={{ textAlign: 'center', color: 'white', marginTop: '80px' }}>LOADING PROFILE...</div>
         </main>
         <Footer />
       </div>
-    )
+    );
   }
 
   if (error || !player) {
@@ -54,178 +85,93 @@ export default function PlayerProfile() {
       <div className="profile-page">
         <Header />
         <main className="profile-main">
-          <div className="profile-not-found">
-            <p>PLAYER NOT FOUND</p>
-            <Link to="/tournaments" className="profile-back-btn">← BACK</Link>
-          </div>
+          <div style={{ textAlign: 'center', color: 'white', marginTop: '80px' }}>PLAYER NOT FOUND</div>
         </main>
         <Footer />
       </div>
-    )
+    );
   }
 
-  const primaryTag = player.battletags?.find(t => t.is_primary) || player.battletags?.[0]
+  const primaryTag = player.battletags?.find(t => t.is_primary) || player.battletags?.[0];
 
   return (
     <div className="profile-page">
       <Header />
-
       <main className="profile-main">
         <div className="profile-container">
-
-          {/* Хлебные крошки */}
           <div className="profile-breadcrumb">
             <Link to="/tournaments">TOURNAMENTS</Link>
             <span className="profile-breadcrumb-sep">›</span>
-            <span>PLAYERS</span>
+            <Link to="/players">PLAYERS</Link>
             <span className="profile-breadcrumb-sep">›</span>
-            <span>{player.username.toUpperCase()}</span>
+            <span>{player.username}</span>
           </div>
 
           <div className="profile-layout">
-
-            {/* ЛЕВАЯ КОЛОНКА */}
-            <div className="profile-sidebar">
-
-              {/* Аватар + имя */}
+            <aside className="profile-sidebar">
               <div className="profile-card">
                 <div className="profile-avatar-wrap">
                   {player.avatar_url ? (
-                    <img
-                      src={player.avatar_url}
-                      alt={player.username}
-                      className="profile-avatar"
-                    />
+                    <img src={player.avatar_url} alt={player.username} className="profile-avatar" />
                   ) : (
                     <div className="profile-avatar-placeholder">
-                      {player.username[0].toUpperCase()}
+                      {player.username ? player.username[0].toUpperCase() : '?'}
                     </div>
                   )}
                   <div className="profile-avatar-border"></div>
                 </div>
 
-                <h1 className="profile-username">
-                  {player.username.toUpperCase()}
-                </h1>
+                <h1 className="profile-username">{player.username}</h1>
+                <span className={`profile-role-badge role-${player.role || 'player'}`}>
+                  {player.role || 'player'}
+                </span>
 
-                {/* Роль */}
-                <div className="profile-role">
-                  <span className={`profile-role-badge role-${player.role}`}>
-                    {player.role.toUpperCase()}
-                  </span>
-                </div>
-
-                {/* BattleTag */}
                 {primaryTag && (
-                  <div className="profile-battletag">
-                    <span className="profile-battletag-icon">⚡</span>
-                    <span className="profile-battletag-text">{primaryTag.tag}</span>
-                  </div>
+                  <div className="profile-battletag">{primaryTag.tag}</div>
                 )}
 
-                {/* Дивизион */}
                 {player.division && (
                   <div className="profile-division">
-                    <span className="profile-division-label">DIVISION</span>
-                    <span className="profile-division-value">{player.division.toUpperCase()}</span>
+                    <span className="profile-division-label">Main Role</span>
+                    <span className="profile-division-value">{player.division}</span>
                   </div>
                 )}
 
-                {/* Статус */}
-                <div className="profile-status">
-                  <span className="profile-status-dot"></span>
-                  <span className="profile-status-text">ONLINE</span>
+                <div className="profile-status" style={{ marginTop: '10px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--accent)' }}></span>
+                  <span>Online</span>
                 </div>
               </div>
-
-              {/* Статистика */}
-              <div className="profile-stats-card">
-                <div className="profile-section-title">
-                  <span className="profile-section-dot">•</span>
-                  STATISTICS
-                </div>
-                <div className="profile-stats-grid">
-                  <div className="profile-stat">
-                    <span className="profile-stat-value">—</span>
-                    <span className="profile-stat-label">WIN RATE</span>
-                  </div>
-                  <div className="profile-stat">
-                    <span className="profile-stat-value">—</span>
-                    <span className="profile-stat-label">K/D RATIO</span>
-                  </div>
-                  <div className="profile-stat">
-                    <span className="profile-stat-value">{player.reputation_score}</span>
-                    <span className="profile-stat-label">REPUTATION</span>
-                  </div>
-                  <div className="profile-stat">
-                    <span className="profile-stat-value">—</span>
-                    <span className="profile-stat-label">TOURNAMENTS</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* BattleTags */}
-              {player.battletags?.length > 0 && (
-                <div className="profile-tags-card">
-                  <div className="profile-section-title">
-                    <span className="profile-section-dot">•</span>
-                    BATTLE TAGS
-                  </div>
-                  <div className="profile-tags-list">
-                    {player.battletags.map(tag => (
-                      <div key={tag.id} className="profile-tag-row">
-                        <span className="profile-tag-text">{tag.tag}</span>
-                        {tag.is_primary && (
-                          <span className="profile-tag-primary">PRIMARY</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Кнопка редактирования (только для своего профиля) */}
+              
+              {/* ─── ИСПРАВЛЕНО: КНОПКА ЗАМЕНЕНА НА ССЫЛКУ ───────────────── */}
               {isOwnProfile && (
-                <button className="profile-edit-btn">
+                <Link to={`/players/${id}/edit`} className="button-primary" style={{ width: '100%', textDecoration: 'none', display: 'block', textAlign: 'center' }}>
                   EDIT PROFILE
-                </button>
+                </Link>
               )}
+              {/* ────────────────────────────────────────────────────────── */}
+            </aside>
 
-            </div>
-
-            {/* ПРАВАЯ КОЛОНКА */}
             <div className="profile-content">
-
-              {/* Табы */}
-              <div className="profile-tabs">
-                <button className="profile-tab active">TOURNAMENT HISTORY</button>
-                <button className="profile-tab">ACHIEVEMENTS</button>
-              </div>
-
-              <div className="profile-tab-content">
-
-                {/* Tournament history — заглушка */}
-                <div className="profile-empty-state">
-                  <div className="profile-empty-icon">🏆</div>
-                  <p className="profile-empty-title">NO TOURNAMENTS YET</p>
-                  <p className="profile-empty-sub">
-                    TOURNAMENT HISTORY WILL APPEAR HERE
-                  </p>
-                  <Link to="/tournaments" className="profile-find-btn">
-                    FIND TOURNAMENT
-                  </Link>
+              {tournaments.length > 0 ? (
+                tournaments.map(t => <TournamentHistoryCard key={t.id} tournament={t} />)
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', height: '100%', minHeight: '300px' }}>
+                  <div style={{ fontSize: '40px', marginBottom: '16px' }}>🏆</div>
+                  <h3 className="profile-username" style={{ fontSize: '20px' }}>NO TOURNAMENTS YET</h3>
+                  <p style={{ color: 'var(--accent-dark)', margin: '8px 0 24px' }}>TOURNAMENT HISTORY WILL APPEAR HERE</p>
+                  <Link to="/tournaments" className="button-primary" style={{ padding: '8px 24px' }}>FIND TOURNAMENT</Link>
                 </div>
-
-              </div>
-
+              )}
+              
+              {/* ─── ДОБАВЛЕНО: КОМПОНЕНТ ИСТОРИИ МАТЧЕЙ ────────────────── */}
+              <PlayerMatchHistory userId={id} />
+              {/* ────────────────────────────────────────────────────────── */}
             </div>
-
           </div>
-
         </div>
       </main>
-
       <Footer />
     </div>
-  )
+  );
 }

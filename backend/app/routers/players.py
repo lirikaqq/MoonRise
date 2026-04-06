@@ -1,106 +1,70 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List
+
 from app.database import get_db
 from app.services.player_service import PlayerService
-from app.schemas.player import (
-    PlayerProfileResponse,
-    PlayerProfileUpdate,
-    BattleTagCreate,
-    BattleTagResponse,
-)
-from app.core.security import decode_access_token
+from app.schemas.player import PlayerProfileResponse, PlayerUpdate, PlayerBase
+from app.core.security import get_current_user_from_token
+# Важно: предположим, что у тебя есть аналогичный хелпер для админа
+# Если нет, можно временно закомментировать защиту роута
+# from app.core.security import get_current_admin_from_token
 
-router = APIRouter(prefix="/players", tags=["players"])
+router = APIRouter(tags=["players"])
 
-
-def get_current_user_id(token: str = None) -> int:
-    """Получить ID текущего пользователя из JWT токена."""
-    if not token:
-        raise HTTPException(status_code=401, detail="Token required")
+@router.get("/", response_model=List[PlayerBase])
+async def get_players(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+    # Получаем игроков из сервиса
+    players_list = await PlayerService.get_all_players(db, skip=skip, limit=limit)
     
-    payload = decode_access_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    user_id = payload.get("sub")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    return int(user_id)
+    # 👇 ВОТ ЭТА СТРОКА САМАЯ ВАЖНАЯ 👇
+    print("--- DEBUG: PLAYERS FROM DB ---", players_list)
+    # 👇 И ВОТ ЭТА 👇
+    if players_list:
+        print("--- DEBUG: FIRST PLAYER OBJECT ---", players_list[0].__dict__)
 
-
-@router.get("/me", response_model=PlayerProfileResponse)
-async def get_current_player(
-    token: str = None,
-    db: AsyncSession = Depends(get_db)
-):
-    """Получить профиль текущего игрока."""
-    user_id = get_current_user_id(token)
-    player = await PlayerService.get_player_by_id(db, user_id)
-    return player
-
+    return players_list
 
 @router.get("/{player_id}", response_model=PlayerProfileResponse)
-async def get_player(
+async def get_player_by_id(player_id: int, db: AsyncSession = Depends(get_db)):
+    player_profile = await PlayerService.get_player_profile(db, player_id)
+    if not player_profile:
+        raise HTTPException(status_code=404, detail="Player not found")
+    return player_profile
+
+@router.get("/{player_id}/tournaments")
+async def get_player_tournaments_history(player_id: int, db: AsyncSession = Depends(get_db)):
+    return await PlayerService.get_player_tournaments(db, player_id)
+
+@router.put("/{user_id}", response_model=PlayerProfileResponse)
+async def update_player_profile(
+    user_id: int,
+    data: PlayerUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user_from_token)
+):
+    if current_user.get("id") != user_id and current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="You can only edit your own profile")
+    updated_user = await PlayerService.update_player(db, user_id=user_id, data=data)
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="Player not found")
+    return await PlayerService.get_player_profile(db, updated_user.id)
+
+# 👇 НОВЫЙ ЭНДПОИНТ 👇
+@router.delete("/{player_id}", status_code=200)
+async def delete_player(
     player_id: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    # Раскомментируй строку ниже, чтобы защитить эндпоинт,
+    # и убедись, что get_current_admin_from_token существует
+    # current_admin: dict = Depends(get_current_admin_from_token),
 ):
-    """Получить профиль игрока по ID."""
-    player = await PlayerService.get_player_by_id(db, player_id)
-    return player
-
-
-@router.put("/me", response_model=PlayerProfileResponse)
-async def update_current_player(
-    profile_update: PlayerProfileUpdate,
-    token: str = None,
-    db: AsyncSession = Depends(get_db)
-):
-    """Обновить свой профиль."""
-    user_id = get_current_user_id(token)
+    """Удаляет игрока и всю его статистику (только для админов)."""
+    deleted_player = await PlayerService.delete_player(db, player_id)
+    if not deleted_player:
+        raise HTTPException(status_code=404, detail="Player not found")
     
-    player = await PlayerService.get_player_by_id(db, user_id)
-    
-    # Обновляем только указанные поля
-    if profile_update.division is not None:
-        player.division = profile_update.division
-    
-    await db.commit()
-    await db.refresh(player)
-    return player
-
-
-@router.post("/me/battletag", response_model=BattleTagResponse)
-async def add_battletag(
-    tag_data: BattleTagCreate,
-    token: str = None,
-    db: AsyncSession = Depends(get_db)
-):
-    """Добавить баттлтег."""
-    user_id = get_current_user_id(token)
-    new_tag = await PlayerService.add_battletag(db, user_id, tag_data)
-    return new_tag
-
-
-@router.delete("/me/battletag/{tag_id}")
-async def delete_battletag(
-    tag_id: int,
-    token: str = None,
-    db: AsyncSession = Depends(get_db)
-):
-    """Удалить баттлтег."""
-    user_id = get_current_user_id(token)
-    result = await PlayerService.delete_battletag(db, user_id, tag_id)
-    return result
-
-
-@router.put("/me/battletag/{tag_id}/primary", response_model=BattleTagResponse)
-async def set_primary_battletag(
-    tag_id: int,
-    token: str = None,
-    db: AsyncSession = Depends(get_db)
-):
-    """Сделать баттлтег основным."""
-    user_id = get_current_user_id(token)
-    tag = await PlayerService.set_primary_battletag(db, user_id, tag_id)
-    return tag
+    return {
+        "message": f"Player '{deleted_player.username}' and all associated data have been deleted.", 
+        "id": player_id
+    }

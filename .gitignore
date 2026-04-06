@@ -9,13 +9,17 @@ env/
 node_modules/
 dist/
 .npm
+.vite/
 
 # Env
 .env*
 !.env.example
 
-# Docker
+# Docker & Databases
 postgres_data/
+redis_data/
+*.db
+*.sqlite3
 
 # IDE / OS
 .vscode/
@@ -25,3 +29,26 @@ postgres_data/
 *.userosscache
 *.sln.docstates
 *.DS_Store
+.DS_Store
+
+# ==========================================
+# MOONRISE SPECIFIC (Логи, Дата, Скрипты)
+# ==========================================
+
+# Логи Overwatch из Workshop
+backend/logs/*.txt
+*.log
+
+# Локальные конфиги и тестовые данные
+backend/tournament_config.json
+backend/register.json
+backend/match.txt
+
+# Одноразовые/локальные админские скрипты
+backend/clead_db.py
+backend/clear_db.py
+backend/make_admin.py
+
+# (Опционально) Раскомментируй строки ниже, если НЕ хочешь пушить эти скрипты в Git:
+backend/bulk_import.py
+backend/seed_tournaments.py

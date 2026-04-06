@@ -1,0 +1,208 @@
+/* frontend/src/pages/AdminApplications.css */
+
+.admin-page {
+  background-color: #0a1a2a;
+  min-height: 100vh;
+  color: #e0e0e0;
+}
+
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.admin-title {
+  font-family: 'Palui', sans-serif;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #13c8b0;
+  text-align: center;
+}
+
+.admin-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.admin-search input {
+  padding: 0.75rem 1rem;
+  background-color: #1a2a3e;
+  border: 2px solid #13c8b0;
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 1rem;
+  width: 300px;
+}
+
+.admin-search input::placeholder {
+  color: #a0a0a0;
+}
+
+.admin-filters {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.admin-filter-btn {
+  padding: 0.5rem 1rem;
+  background-color: #1a2a3e;
+  border: 2px solid #13c8b0;
+  border-radius: 6px;
+  color: #a0a0a0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-filter-btn.active {
+  background-color: #13c8b0;
+  color: white;
+  border-color: #13c8b0;
+}
+
+.admin-loading {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #a0a0a0;
+}
+
+.admin-table-container {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.admin-table th {
+  background-color: #132a3e;
+  padding: 1rem;
+  text-align: left;
+  color: #13c8b0;
+  font-family: 'Digits', sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  position: relative;
+}
+
+.admin-table th:hover {
+  background-color: #133a4e;
+}
+
+.admin-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(19, 200, 176, 0.2);
+}
+
+.admin-table-row {
+  transition: background-color 0.2s;
+}
+
+.admin-table-row:hover {
+  background-color: rgba(19, 200, 176, 0.1);
+}
+
+.admin-table-row.pending {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.admin-table-row.registered {
+  background-color: rgba(34, 197, 94, 0.05);
+}
+
+.admin-table-row.rejected {
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.admin-rating-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-rating-select {
+  padding: 0.25rem;
+  background-color: #1a2a3e;
+  border: 1px solid #13c8b0;
+  border-radius: 4px;
+  color: #e0e0e0;
+}
+
+.admin-status-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.admin-status-badge.pending {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.admin-status-badge.registered {
+  background-color: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.admin-status-badge.rejected {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.admin-approve-btn, .admin-reject-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  margin-right: 0.5rem;
+  cursor: pointer;
+}
+
+.admin-approve-btn {
+  background-color: #22c55e;
+  color: white;
+  border: none;
+}
+
+.admin-approve-btn:hover {
+  background-color: #16a34a;
+}
+
+.admin-reject-btn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+}
+
+.admin-reject-btn:hover {
+  background-color: #dc2626;
+}
+
+.admin-no-data {
+  text-align: center;
+  padding: 1rem;
+  color: #a0a0a0;
+  font-style: italic;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .admin-table {
+    font-size: 0.8rem;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 0.5rem;
+  }
+
+  .admin-controls {
+    flex-direction: column;
+  }
+}

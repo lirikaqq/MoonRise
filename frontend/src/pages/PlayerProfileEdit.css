@@ -1,0 +1,38 @@
+.edit-profile-page {
+  background-color: #0a0a0f;
+  color: white;
+  min-height: 100vh;
+  padding: 2.5rem 1rem;
+}
+.edit-profile-container {
+  max-width: 42rem;
+  margin: 0 auto;
+}
+.form-group {
+  margin-bottom: 1.5rem;
+}
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #a0aec0;
+}
+.form-input {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.25rem;
+  padding: 0.75rem 1rem;
+  color: white;
+  font-size: 1rem;
+}
+.form-input:focus {
+  outline: none;
+  border-color: #c8a951;
+}
+.form-actions {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+}

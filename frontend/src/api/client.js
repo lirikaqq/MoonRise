@@ -1,13 +1,17 @@
-import axios from 'axios'
-
-const API_URL = 'http://localhost:8000'
+// frontend/src/api/client.js
+import axios from 'axios';
 
 const client = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
+  baseURL: 'http://localhost:8000/api',
+});
 
-export default client
-export { API_URL }
+// ✅ Автоматически добавляет токен ко ВСЕМ запросам
+client.interceptors.request.use((config) => {
+  const token = localStorage.getItem('moonrise_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export default client;

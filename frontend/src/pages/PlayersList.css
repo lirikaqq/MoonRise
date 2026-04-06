@@ -1,0 +1,187 @@
+/* Общие стили страницы, как в profile-page */
+.players-catalog-page {
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image: url("/assets/images/grid-bg.png");
+  background-repeat: repeat;
+  font-family: "Ponter", sans-serif;
+}
+
+/* Контейнер для хедера и поиска */
+.players-header {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+@media (min-width: 768px) {
+  .players-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.players-title h1 {
+  font-family: "Palui", sans-serif;
+  font-size: 32px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
+.players-title p {
+  font-size: 13px;
+  color: var(--accent-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 4px;
+}
+
+/* Форма поиска */
+.players-search-form {
+  display: flex;
+  width: 100%;
+  max-width: 400px;
+}
+
+.players-search-input {
+  flex-grow: 1;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  border-right: none;
+  padding: 10px 16px;
+  color: white;
+  font-family: "Ponter", sans-serif;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+.players-search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.players-search-button {
+  background: var(--accent);
+  color: var(--bg);
+  border: 1px solid var(--accent);
+  padding: 10px 24px;
+  font-family: "Palui", sans-serif;
+  text-transform: uppercase;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.players-search-button:hover {
+  background-color: transparent;
+  color: var(--accent);
+}
+
+/* СЕТКА ИГРОКОВ */
+.players-grid {
+  display: grid;
+  /* Адаптивная сетка: будет 2, 3, 4 или больше колонок в зависимости от ширины экрана */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+/* Стили для состояний загрузки и отсутствия результатов */
+.players-feedback-block {
+  text-align: center;
+  padding: 80px 0;
+  color: var(--accent-dark);
+}
+
+.players-feedback-block h3 {
+  font-family: "Palui", sans-serif;
+  font-size: 24px;
+  color: var(--accent);
+  margin-top: 12px;
+}
+
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tournament-history-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: rgba(16, 39, 47, 0.84);
+  border: 1px solid var(--border);
+  padding: 16px;
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+
+.tournament-history-card:hover {
+  border-color: var(--accent);
+}
+
+.tournament-history-cover {
+  width: 120px;
+  height: 60px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background-color: rgba(19, 200, 176, 0.1);
+}
+
+.tournament-history-info {
+  flex-grow: 1;
+}
+
+.tournament-history-title {
+  font-family: "Palui", sans-serif;
+  font-size: 18px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin: 0 0 4px;
+}
+
+.tournament-history-meta {
+  display: flex;
+  gap: 16px;
+  font-family: "Ponter", sans-serif;
+  font-size: 12px;
+  color: var(--accent-dark);
+  text-transform: uppercase;
+}
+
+.profile-card-wrapper {
+  position: relative;
+}
+
+.profile-card__delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: rgba(16, 29, 39, 0.6);
+  color: #a0aec0;
+  font-size: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.profile-card__delete-btn:hover {
+  background: rgba(229, 57, 53, 0.8);
+  border-color: #E53935;
+  color: #fff;
+  transform: scale(1.1);
+}
