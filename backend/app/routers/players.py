@@ -4,11 +4,11 @@ from typing import List
 
 from app.database import get_db
 from app.services.player_service import PlayerService
-from app.schemas.player import PlayerProfileResponse, PlayerUpdate, PlayerBase
+from app.schemas.player import (
+    PlayerProfileResponse, PlayerUpdate, PlayerBase,
+    PlayerProfileStatsResponse, TopHeroesResponse, MatchHistoryItemResponse,
+)
 from app.core.security import get_current_user_from_token
-# Важно: предположим, что у тебя есть аналогичный хелпер для админа
-# Если нет, можно временно закомментировать защиту роута
-# from app.core.security import get_current_admin_from_token
 
 router = APIRouter(tags=["players"])
 
@@ -65,6 +65,32 @@ async def delete_player(
         raise HTTPException(status_code=404, detail="Player not found")
     
     return {
-        "message": f"Player '{deleted_player.username}' and all associated data have been deleted.", 
+        "message": f"Player '{deleted_player.username}' and all associated data have been deleted.",
         "id": player_id
     }
+
+
+# ============================================================
+# НОВЫЕ ЭНДПОИНТЫ ДЛЯ СТАТИСТИКИ
+# ============================================================
+
+@router.get("/{player_id}/profile-stats", response_model=PlayerProfileStatsResponse)
+async def get_player_profile_stats(player_id: int, db: AsyncSession = Depends(get_db)):
+    """Агрегированная статистика игрока по всем матчам."""
+    stats = await PlayerService.get_player_profile_stats(db, player_id)
+    if not stats:
+        raise HTTPException(status_code=404, detail="No match data found for this player")
+    return stats
+
+
+@router.get("/{player_id}/top-heroes", response_model=TopHeroesResponse)
+async def get_player_top_heroes(player_id: int, limit: int = 5, db: AsyncSession = Depends(get_db)):
+    """Топ героев игрока по времени игры."""
+    heroes = await PlayerService.get_player_top_heroes(db, player_id, limit=limit)
+    return {"heroes": heroes}
+
+
+@router.get("/{player_id}/match-history", response_model=List[MatchHistoryItemResponse])
+async def get_player_enhanced_match_history(player_id: int, db: AsyncSession = Depends(get_db)):
+    """Расширенная история матчей игрока с result, kda, mvp/svp, main_hero."""
+    return await PlayerService.get_player_enhanced_match_history(db, player_id)

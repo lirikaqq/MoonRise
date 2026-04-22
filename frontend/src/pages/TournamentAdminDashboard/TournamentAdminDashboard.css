@@ -1,0 +1,179 @@
+/* frontend/src/pages/TournamentAdminDashboard/TournamentAdminDashboard.css */
+
+.tournament-admin-dashboard {
+  padding: 20px;
+  max-width: 1480px;
+  margin: 0 auto;
+  font-family: 'Ponter', sans-serif;
+  color: var(--text-soft);
+}
+
+/* ===================== МАЯЧОК ===================== */
+.tournament-admin-dashboard h2[style*="lime"] {
+  background-color: #0a1f17;
+  border-bottom: 3px solid var(--accent);
+  color: var(--accent-light);
+  font-family: 'Montserrat', sans-serif;
+  letter-spacing: 1px;
+}
+
+/* ===================== ШАПКА ===================== */
+.admin-header {
+  background-color: var(--block-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.admin-header-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.admin-back-btn, .admin-refresh-btn {
+  background-color: var(--button-bg);
+  color: var(--text-soft);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Montserrat', sans-serif;
+  cursor: pointer;
+}
+
+.admin-tournament-title h1 {
+  margin: 0 0 8px 0;
+  color: var(--accent-light);
+  font-size: 28px;
+  text-shadow: 0 0 15px rgba(19, 200, 176, 0.3);
+}
+
+.admin-division-badge {
+  background-color: var(--accent-dark);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.admin-meta-badges {
+  display: flex;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.admin-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+}
+
+/* ===================== ТАБЫ ===================== */
+.admin-tabs-container {
+  margin-bottom: 20px;
+}
+
+.admin-tabs {
+  display: flex;
+  background-color: var(--block-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.admin-tab {
+  flex: 1;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  color: var(--text-soft);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-tab:hover {
+  background-color: rgba(19, 200, 176, 0.1);
+}
+
+.admin-tab.active {
+  background-color: var(--accent);
+  color: #0a1f17;
+}
+
+/* ===================== КОНТЕНТ ===================== */
+.admin-content {
+  background-color: var(--block-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+  min-height: 70vh;
+}
+
+/* ===================== ОБЩИЕ ===================== */
+.admin-loading,
+.admin-empty {
+  padding: 60px;
+  text-align: center;
+  background-color: var(--block-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-soft);
+}
+
+.admin-message {
+  padding: 14px 20px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.admin-message--success {
+  background-color: rgba(19, 200, 176, 0.15);
+  color: var(--accent-light);
+  border: 1px solid var(--accent);
+}
+
+.admin-message--error {
+  background-color: rgba(255, 70, 70, 0.15);
+  color: #ff9a9a;
+  border: 1px solid #ff5555;
+}
+
+/* Кнопки */
+.btn {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  color: #0a1f17;
+  border: none;
+}
+
+.btn-danger {
+  background-color: #9c2a2a;
+  color: white;
+  border: none;
+}
+
+.btn:hover {
+  filter: brightness(1.1);
+}

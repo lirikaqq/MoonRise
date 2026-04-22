@@ -23,4 +23,12 @@ python-multipart==0.0.9
 # Redis Client
 redis[hiredis]>=5.0.0
 
+# HTML Sanitization
+bleach>=6.0.0
+
 psycopg2-binary
+
+# Testing
+pytest==8.2.0
+pytest-asyncio==0.23.6
+pytest-mock==3.14.0

@@ -65,8 +65,8 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - ./frontend:/app                  # ← Изменено: монтируем весь фронтенд
+      - /app/node_modules                # чтобы не затирать node_modules
     depends_on:
       - backend
 

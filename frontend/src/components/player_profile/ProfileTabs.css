@@ -1,0 +1,107 @@
+/* ============================================================
+   ProfileTabs.css — Вкладки OVERVIEW / TOURNAMENTS / ACHIEVEMENTS
+   Общая высота панели (до cyan линии): 70
+   Высота таба: 45, padding: 12/41/18/41
+   Нижняя cyan линия: 1px #13AD91
+   Underline активного таба: 5px #A7F2A2
+   Активный таб: bg #23423F, padding-left-right: 74
+   Шрифт: ST-SimpleSquare
+   Отступ текста до underline: 25px
+   ============================================================ */
+
+.profile-tabs {
+  display: flex;
+  align-items: flex-start;
+  height: 70px; /* общая высота панели до cyan линии */
+}
+
+/* ============================================================
+   Один таб
+   Высота: 45, padding: 12/41/18/41
+   Шрифт: ST-SimpleSquare
+   ============================================================ */
+
+.profile-tab {
+  position: relative;
+  height: 45px;
+  padding: 10px 41px 18px 41px;
+  font-family: "Digits", sans-serif;
+  font-size: 20px;
+  color: var(--tournament-accent-light);
+  font-weight:normal;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 280px;
+}
+
+.profile-tab:hover {
+  background: rgba(167, 242, 162, 0.08);
+}
+
+/* ============================================================
+   Активный таб
+   Background: #23423F
+   Padding слева и справа от текста "OVERVIEW": 74
+   Нижний отступ от текста до underline: 25px
+   ============================================================ */
+
+.profile-tab--active {
+  background: var(--tab-active-bg);
+  padding-left: 74px;
+  padding-right: 74px;
+}
+
+/* Underline активного таба: 5px, цвет #A7F2A2 */
+/* bottom: -26px = 25px отступ от текста + 1px cyan линия */
+.profile-tab--active::after {
+  content: '';
+  position: absolute;
+  bottom: 1px;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: var(--tournament-accent-light);
+}
+
+/* ============================================================
+   Контент табов с анимацией
+   ============================================================ */
+
+.profile-tab-content {
+  position: relative;
+  min-height: 200px;
+}
+
+.profile-tab-panel {
+  opacity: 1;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.profile-tab-panel--exiting {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.profile-tab-panel--entering {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/* ============================================================
+   Линия под табами
+   ============================================================ */
+
+.profile-tabs__line {
+  border: none;
+  border-top: 2px solid var(--tournament-accent);
+  width: 1121px;
+  height: 0;
+  margin: 0;
+  margin-top: 25px;
+}

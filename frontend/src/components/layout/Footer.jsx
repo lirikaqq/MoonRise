@@ -4,19 +4,19 @@ export default function Footer() {
       <div className="home-footer-inner">
 
         <div className="home-footer-socials">
-          <a href="#" className="home-footer-social">
+          <a href="#" className="corner-icon-link">
             <img src="/assets/icons/discord.svg" alt="Discord" />
           </a>
-          <a href="#" className="home-footer-social">
+          <a href="#" className="corner-icon-link">
             <img src="/assets/icons/twitch.svg" alt="Twitch" />
           </a>
-          <a href="#" className="home-footer-social">
+          <a href="#" className="corner-icon-link">
             <img src="/assets/icons/youtube.svg" alt="YouTube" />
           </a>
-          <a href="#" className="home-footer-social">
+          <a href="#" className="corner-icon-link">
             <img src="/assets/icons/telegram.svg" alt="Telegram" />
           </a>
-          <a href="#" className="home-footer-social">
+          <a href="#" className="corner-icon-link">
             <img src="/assets/icons/tiktok.svg" alt="TikTok" />
           </a>
         </div>

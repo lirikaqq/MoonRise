@@ -21,3 +21,70 @@
 .admin-list-item__action-btn { width: 36px; height: 36px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: #a0aec0; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; text-decoration: none; }
 .admin-list-item__action-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 .admin-list-item__action-btn--delete:hover { background: rgba(229, 57, 53, 0.2); border-color: #E53935; color: #E53935; }
+
+/* ==================== TEAM CONFIG ==================== */
+.atf-role-limits-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 8px;
+  padding: 12px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.atf-role-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.atf-role-item label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.atf-input-small {
+  width: 65px;
+  text-align: center;
+  padding: 8px 6px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  background-color: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: white;
+}
+
+.atf-input-small:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0, 255, 100, 0.2);
+}
+
+.atf-presets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.atf-preset-btn {
+  padding: 8px 16px;
+  background-color: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.atf-preset-btn:hover {
+  background-color: var(--accent);
+  color: black;
+  border-color: var(--accent);
+}

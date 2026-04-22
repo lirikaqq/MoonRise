@@ -1,36 +1,69 @@
-# backend/app/schemas/tournament.py
-
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, ConfigDict, field_validator, model_validator
 from typing import Optional, Dict, Any, List
 from datetime import datetime
-from app.constants import VALID_RANKS, VALID_ROLES, VALID_TOURNAMENT_STATUSES
+
+from app.constants import VALID_TOURNAMENT_STATUSES, VALID_ROLES, VALID_RANKS
 
 
-# ==================== СУЩЕСТВУЮЩИЕ СХЕМЫ (НЕ ТРОГАЕМ) ====================
+# ====================== DRAFT SESSION ======================
 
-# backend/app/schemas/tournament.py
-from datetime import datetime
-from pydantic import BaseModel, Field, field_validator
+class DraftSessionResponse(BaseModel):
+    id: int
+    tournament_id: int
+    status: str
+    pick_time_seconds: int
+    team_size: int
+    current_pick_index: int
+    pick_order: List[int]
+    role_slots: Dict[str, Any]
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ====================== TOURNAMENT ======================
 
 class TournamentCreate(BaseModel):
     title: str = Field(..., min_length=3, max_length=255)
-    description: Optional[str] = None
     format: str = Field(..., pattern="^(mix|draft)$")
     cover_url: Optional[str] = None
-    start_date: datetime = Field(..., example="2025-12-25T19:00:00Z")
-    end_date: datetime = Field(..., example="2025-12-25T23:00:00Z")
-    status: str = Field(default="upcoming")
-    max_participants: Optional[int] = 100
+
+    description_general: Optional[str] = None
+    description_dates: Optional[str] = None
+    description_requirements: Optional[str] = None
+
+    start_date: datetime
+    end_date: datetime
     registration_open: Optional[datetime] = None
     registration_close: Optional[datetime] = None
     checkin_open: Optional[datetime] = None
     checkin_close: Optional[datetime] = None
+
+    status: str = Field(default="upcoming")
+    max_participants: Optional[int] = 100
+    is_featured: bool = Field(default=False)
+
+    structure_type: str = Field(default="SINGLE_ELIMINATION")
+    structure_settings: Optional[Dict[str, Any]] = None
+    twitch_channel: Optional[str] = Field(None, max_length=100)
+    rules_url: Optional[str] = Field(None, max_length=255)
+    google_sheet_id: Optional[str] = None
 
     @field_validator('status')
     @classmethod
     def validate_status(cls, v: str) -> str:
         if v not in VALID_TOURNAMENT_STATUSES:
             raise ValueError(f"Invalid status. Must be one of: {VALID_TOURNAMENT_STATUSES}")
+        return v
+
+    @field_validator('structure_type')
+    @classmethod
+    def validate_structure_type(cls, v: str) -> str:
+        valid = ["SINGLE_ELIMINATION", "DOUBLE_ELIMINATION", "ROUND_ROBIN", "GROUPS_PLUS_PLAYOFF", "SWISS"]
+        if v not in valid:
+            raise ValueError(f"structure_type must be one of: {valid}")
         return v
 
     @field_validator('end_date')
@@ -41,66 +74,124 @@ class TournamentCreate(BaseModel):
         return v
 
 
+class TournamentUpdate(BaseModel):
+    """Обновление данных турнира (все поля опциональные)."""
+    title: Optional[str] = Field(None, min_length=3, max_length=255)
+    format: Optional[str] = Field(None, pattern="^(mix|draft)$")
+    cover_url: Optional[str] = None
+
+    description_general: Optional[str] = None
+    description_dates: Optional[str] = None
+    description_requirements: Optional[str] = None
+
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    registration_open: Optional[datetime] = None
+    registration_close: Optional[datetime] = None
+    checkin_open: Optional[datetime] = None
+    checkin_close: Optional[datetime] = None
+    status: Optional[str] = None
+    max_participants: Optional[int] = None
+    is_featured: Optional[bool] = None
+
+    structure_type: Optional[str] = None
+    structure_settings: Optional[Dict[str, Any]] = None
+    twitch_channel: Optional[str] = Field(None, max_length=100)
+    rules_url: Optional[str] = Field(None, max_length=255)
+    
+    # ← Добавлено для поддержки team_config
+    team_config: Optional[Dict[str, Any]] = None
+
+    @field_validator('format')
+    @classmethod
+    def validate_format(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v not in ["mix", "draft"]:
+            raise ValueError("Format must be 'mix' or 'draft'")
+        return v
+
+    @field_validator('status')
+    @classmethod
+    def validate_status(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v not in VALID_TOURNAMENT_STATUSES:
+            raise ValueError(f"Invalid status. Must be one of: {VALID_TOURNAMENT_STATUSES}")
+        return v
+
+
 class TournamentResponse(BaseModel):
-    """Полный ответ турнира."""
     id: int
     title: str
-    description: Optional[str]
     format: str
-    cover_url: Optional[str]
+    cover_url: Optional[str] = None
+    description_general: Optional[str] = None
+    description_dates: Optional[str] = None
+    description_requirements: Optional[str] = None
+
     start_date: datetime
     end_date: datetime
-    registration_open: Optional[datetime]
-    registration_close: Optional[datetime]
-    checkin_open: Optional[datetime]
-    checkin_close: Optional[datetime]
+    registration_open: Optional[datetime] = None
+    registration_close: Optional[datetime] = None
+    checkin_open: Optional[datetime] = None
+    checkin_close: Optional[datetime] = None
+
     status: str
-    max_participants: Optional[int]
-    participants_count: int
-    is_featured: bool
-    is_active: bool
+    max_participants: Optional[int] = None
+    participants_count: int = 0
+    is_featured: bool = False
+    is_active: bool = True
+
+    structure_type: str
+    structure_settings: Optional[Dict[str, Any]] = None
+    twitch_channel: Optional[str] = None
+    rules_url: Optional[str] = None
+    google_sheet_id: Optional[str] = None
+
+    # Архитектурные поля
+    team_config: Dict[str, Any] = Field(default_factory=dict)
+    division: Optional[int] = None
+
+    # Защита от MissingGreenlet
+    draft_session: Optional[Dict[str, Any]] = None
+
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+    )
 
 
 class TournamentShortResponse(BaseModel):
-    """Короткий ответ турнира (для списка)."""
     id: int
     title: str
     format: str
-    cover_url: Optional[str]
+    cover_url: Optional[str] = None
     start_date: datetime
     end_date: datetime
     status: str
     participants_count: int
-    max_participants: Optional[int]
-    is_featured: bool
+    max_participants: Optional[int] = None
+    is_featured: bool = False
+    structure_type: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
-# ==================== НОВЫЕ СХЕМЫ ДЛЯ ЗАЯВОК ====================
+# ====================== APPLICATIONS ======================
+
 class ApplicationCreateMix(BaseModel):
-    """
-    Заявка на mix-турнир.
-    """
-    primary_role: str = Field(..., description="Основная роль")
-    secondary_role: str = Field(..., description="Дополнительная роль")
+    primary_role: str
+    secondary_role: str
     bio: Optional[str] = Field(None, max_length=500)
-    
-    # НОВЫЕ ОБЯЗАТЕЛЬНЫЕ ПОЛЯ ДЛЯ ВСЕХ ТУРНИРОВ
-    confirmed_friend_request: bool = Field(..., description="Подтверждение добавления в друзья")
-    confirmed_rules: bool = Field(..., description="Согласие с регламентом")
+    confirmed_friend_request: bool
+    confirmed_rules: bool
 
     @field_validator('primary_role', 'secondary_role')
     @classmethod
     def validate_role(cls, v: str) -> str:
         if v not in VALID_ROLES:
-            raise ValueError(f"Роль должна быть одной из: {', '.join(VALID_ROLES)}")
+            raise ValueError(f"Роль должна быть одной из: {VALID_ROLES}")
         return v
 
     @field_validator('confirmed_friend_request', 'confirmed_rules')
@@ -120,19 +211,15 @@ class ApplicationCreateMix(BaseModel):
 
 
 class ApplicationCreateDraft(ApplicationCreateMix):
-    """
-    Заявка на draft-турнир.
-    """
-    rating_claimed: str = Field(..., description="Рейтинг игрока")
-
-    battletag_id: Optional[int] = Field(None, description="ID существующего BattleTag")
-    new_battletag: Optional[str] = Field(None, max_length=50, description="Новый BattleTag")
+    rating_claimed: str
+    battletag_id: Optional[int] = None
+    new_battletag: Optional[str] = Field(None, max_length=50)
 
     @field_validator('rating_claimed')
     @classmethod
     def validate_rating(cls, v: str) -> str:
         if v not in VALID_RANKS:
-            raise ValueError(f"Рейтинг должен быть одним из допустимых значений")
+            raise ValueError("Rating must be one of valid ranks")
         return v
 
     @field_validator('new_battletag')
@@ -147,7 +234,6 @@ class ApplicationCreateDraft(ApplicationCreateMix):
 
     @model_validator(mode='after')
     def validate_battletag_provided(self) -> 'ApplicationCreateDraft':
-        # Проверяем BattleTag
         if not self.battletag_id and not self.new_battletag:
             raise ValueError("Необходимо указать battletag_id или new_battletag")
         if self.battletag_id and self.new_battletag:
@@ -155,93 +241,44 @@ class ApplicationCreateDraft(ApplicationCreateMix):
         return self
 
 
-
 class ApplicationResponse(BaseModel):
-    """
-    Ответ с информацией о заявке.
-    Используется для юзера (его заявка) и для админа (список заявок).
-    """
     id: int
     tournament_id: int
     user_id: int
-    status: str                      # pending / registered / rejected
+    status: str
     is_allowed: bool
-    metadata: Optional[Dict[str, Any]]
+    metadata: Optional[Dict[str, Any]] = None
     registered_at: datetime
     updated_at: datetime
-
-    # Данные юзера (заполняются на уровне endpoint'а)
     user_username: Optional[str] = None
     user_display_name: Optional[str] = None
     user_avatar_url: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ApplicationApprove(BaseModel):
-    """
-    Апрув заявки админом.
-    Для draft-турниров можно скорректировать рейтинг.
-    """
-    rating_approved: Optional[str] = Field(
-        None,
-        description="Одобренный рейтинг (только для draft-турниров)"
-    )
+    rating_approved: Optional[str] = None
 
     @field_validator('rating_approved')
     @classmethod
     def validate_rating(cls, v: Optional[str]) -> Optional[str]:
         if v is not None and v not in VALID_RANKS:
-            raise ValueError(f"Рейтинг должен быть одним из допустимых значений")
+            raise ValueError("Rating must be one of valid ranks")
         return v
 
 
 class ApplicationReject(BaseModel):
-    """
-    Отклонение заявки админом.
-    """
-    reason: Optional[str] = Field(None, max_length=500, description="Причина отклонения")
+    reason: Optional[str] = Field(None, max_length=500)
 
-class TournamentUpdate(BaseModel):
-    """Обновление данных турнира (все поля опциональные)."""
-    title: Optional[str] = Field(None, min_length=3, max_length=255)
-    description: Optional[str] = None
-    format: Optional[str] = Field(None, pattern="^(mix|draft)$")
-    cover_url: Optional[str] = None
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
-    registration_open: Optional[datetime] = None
-    registration_close: Optional[datetime] = None
-    checkin_open: Optional[datetime] = None
-    checkin_close: Optional[datetime] = None
-    status: Optional[str] = None
-    max_participants: Optional[int] = None
-    is_featured: Optional[bool] = None
 
-    @field_validator('format')
-    @classmethod
-    def validate_format(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and v not in ["mix", "draft"]:
-            raise ValueError("Format must be 'mix' or 'draft'")
-        return v
-
-    @field_validator('status')
-    @classmethod
-    def validate_status(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and v not in [
-            "upcoming", "registration", "checkin",
-            "draft", "ongoing", "completed", "cancelled"
-        ]:
-            raise ValueError("Invalid tournament status")
-        return v
-    
-# === СХЕМЫ ДЛЯ СЕТКИ (BRACKET) ===
+# ====================== BRACKET ======================
 
 class BracketTeam(BaseModel):
     name: str
     score: int
     isWinner: bool
+
 
 class BracketMatch(BaseModel):
     id: int
@@ -249,10 +286,70 @@ class BracketMatch(BaseModel):
     team1: Optional[BracketTeam] = None
     team2: Optional[BracketTeam] = None
 
+
 class BracketRound(BaseModel):
     round_name: str
     matches: List[BracketMatch]
 
+
 class BracketResponse(BaseModel):
     upper_bracket: List[BracketRound]
-    # lower_bracket: List[BracketRound] = [] # Задел для нижней сетки
+    lower_bracket: Optional[List[BracketRound]] = None
+
+
+# ====================== ADMIN ADD PARTICIPANT ======================
+
+class AddParticipantRequest(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    discord_tag: Optional[str] = Field(None, max_length=50)
+    battletag_value: str = Field(..., min_length=3, max_length=50)
+    primary_role: str
+    secondary_role: Optional[str] = None
+    division: Optional[int] = Field(None, ge=1, le=20)
+    bio: Optional[str] = Field(None, max_length=500)
+    is_captain: bool = False
+
+    @field_validator('primary_role', 'secondary_role')
+    @classmethod
+    def validate_roles(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v not in VALID_ROLES:
+            raise ValueError(f"Invalid role. Must be one of: {VALID_ROLES}")
+        return v
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ====================== PLAYER REPLACEMENT ======================
+
+class ReplacePlayerRequest(BaseModel):
+    old_participant_id: int = Field(..., gt=0)
+    new_participant_id: int = Field(..., gt=0)
+    reason: Optional[str] = Field(None, max_length=500)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ReplacementResponse(BaseModel):
+    id: int
+    tournament_id: int
+    team_id: int
+    old_participant_id: int
+    new_participant_id: int
+    replaced_by_user_id: int
+    replaced_at: datetime
+    reason: Optional[str] = None
+    previous_is_captain: bool
+
+    old_participant: Optional[Dict[str, Any]] = None
+    new_participant: Optional[Dict[str, Any]] = None
+    replaced_by: Optional[Dict[str, Any]] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TeamWithHistoryResponse(BaseModel):
+    team: Dict[str, Any]
+    active_participants: List[Dict[str, Any]]
+    replacement_history: List[ReplacementResponse]
+
+    model_config = ConfigDict(from_attributes=True)

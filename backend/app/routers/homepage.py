@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.database import get_db
 from app.models.homepage import HomepageSettings
@@ -25,6 +25,7 @@ class HomepageResponse(BaseModel):
     registration_url: str
     info_text: str
     info_url: str
+    twitch_channel: Optional[str]
 
     class Config:
         from_attributes = True
@@ -40,6 +41,7 @@ class HomepageUpdate(BaseModel):
     registration_url: Optional[str] = None
     info_text: Optional[str] = None
     info_url: Optional[str] = None
+    twitch_channel: Optional[str] = None
 
 async def get_admin_user(authorization: str, db: AsyncSession) -> User:
     if not authorization or not authorization.startswith("Bearer "):
@@ -82,7 +84,7 @@ async def update_homepage_settings(
     update_data = data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(settings, field, value)
-    settings.updated_at = datetime.utcnow()
+    settings.updated_at = datetime.now(timezone.utc)
     await db.commit()
     await db.refresh(settings)
     return settings

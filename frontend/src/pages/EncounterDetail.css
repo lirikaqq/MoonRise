@@ -1,0 +1,180 @@
+.ed-page {
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image: url('/assets/images/grid-bg.png');
+  background-repeat: no-repeat;
+  background-position: top center;
+}
+
+.ed-main { padding-bottom: 80px; }
+
+.ed-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.ed-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+  color: var(--accent-dark);
+}
+
+.ed-spinner {
+  width: 36px; height: 36px;
+  border: 2px solid rgba(19,200,176,0.15);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: ed-spin 1s linear infinite;
+}
+@keyframes ed-spin { to { transform: rotate(360deg); } }
+
+/* Header */
+.ed-header {
+  text-align: center;
+  padding-top: 40px;
+  margin-bottom: 40px;
+}
+
+.ed-score-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.ed-team-name {
+  font-size: 22px;
+  color: rgba(255,255,255,0.7);
+  text-transform: uppercase;
+}
+
+.ed-win { color: #A7F2A2; }
+
+.ed-score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ed-score-num {
+  font-size: 36px;
+  color: rgba(19,200,176,0.5);
+}
+
+.ed-score-win { color: #A7F2A2; }
+
+.ed-score-sep {
+  font-size: 24px;
+  color: rgba(19,200,176,0.3);
+}
+
+.ed-stage {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  color: rgba(19,200,176,0.4);
+  letter-spacing: 0.1em;
+}
+
+/* Maps — кликабельные карты */
+.ed-maps {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+.ed-map-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 28px;
+  background: var(--block-bg);
+  border: 1px solid rgba(19,200,176,0.15);
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+  min-width: 140px;
+}
+
+.ed-map-card:hover {
+  border-color: #13AD91;
+  background: rgba(19,200,176,0.06);
+  transform: translateY(-2px);
+}
+
+.ed-map-card--active {
+  border-color: #A7F2A2;
+  background: rgba(167,242,162,0.08);
+  box-shadow: 0 0 20px rgba(167,242,162,0.1);
+}
+
+.ed-map-num {
+  font-size: 24px;
+  color: rgba(19,200,176,0.3);
+}
+
+.ed-map-name {
+  font-size: 14px;
+  color: #13AD91;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ed-map-mode {
+  font-size: 10px;
+  color: rgba(19,200,176,0.4);
+  text-transform: uppercase;
+}
+
+/* Match info */
+.ed-match-info {
+  text-align: center;
+  padding: 16px;
+  background: rgba(17,27,37,0.4);
+  border: 1px solid rgba(19,200,176,0.1);
+  margin-bottom: 32px;
+}
+
+.ed-match-link {
+  text-decoration: none;
+  color: #A7F2A2;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  transition: color 0.2s;
+}
+
+.ed-match-link:hover {
+  color: #fff;
+}
+
+/* Back */
+.ed-back {
+  display: block;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 2px solid rgba(19,200,176,0.15);
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ed-back:hover { color: #A7F2A2; }
+
+@media (max-width: 768px) {
+  .ed-container { padding: 0 16px; }
+  .ed-maps { gap: 10px; }
+  .ed-map-card { padding: 14px 18px; min-width: 120px; }
+  .ed-score-num { font-size: 28px; }
+  .ed-team-name { font-size: 16px; }
+}

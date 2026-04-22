@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { tournamentsApi } from '../api/tournaments'
 import { useAuth } from '../context/AuthContext'
 import Header from '../components/layout/Header'
@@ -74,16 +74,41 @@ function getTabs(status) {
 const ROLE_FILTERS = ['all', 'tank', 'dps', 'sup', 'flex']
 
 function ParticipantCard({ player, index }) {
+  const navigate = useNavigate()
+  const [isClicking, setIsClicking] = useState(false)
+  const [searchParams] = useSearchParams()
+  const currentTab = searchParams.get('tab') || 'information'
+
   const checkedIn = player.status === 'checkedin'
   const allowed = player.is_allowed !== false
+
+  const handleClick = () => {
+    if (!player.id) return
+    setIsClicking(true)
+    setTimeout(() => {
+      navigate(`/players/${player.id}`, {
+        state: {
+          from: {
+            url: `/tournaments/${window.location.pathname.split('/').pop()}?tab=${currentTab}`,
+            label: 'TOURNAMENT'
+          }
+        }
+      })
+    }, 300)
+  }
+
   return (
-    <div className="td-p-card">
+    <div
+      className={`td-p-card ${isClicking ? 'td-p-card--clicking' : ''}`}
+      onClick={handleClick}
+      style={{ cursor: player.id ? 'pointer' : 'default' }}
+    >
       <div className="td-p-card-header">
-        <span className="td-p-card-num font-digits">{index}</span>
+        <span className="td-p-card-num">{index}</span>
         {player.primary_role && (
           <div className="td-p-role-badge">
             <img src={`/assets/icons/icon-role-${player.primary_role}.svg`} alt="" className="td-p-badge-icon" />
-            <span className="font-palui">{player.primary_role.toUpperCase()}</span>
+            <span>{player.primary_role.toUpperCase()}</span>
           </div>
         )}
       </div>
@@ -91,23 +116,27 @@ function ParticipantCard({ player, index }) {
         <div className="td-p-avatar">
           {player.avatar_url
             ? <img src={player.avatar_url} alt="" />
-            : <span className="td-p-avatar-placeholder font-digits">{(player.display_name || '?')[0].toUpperCase()}</span>
+            : <span className="td-p-avatar-placeholder">{(player.display_name || '?')[0].toUpperCase()}</span>
           }
         </div>
         <div className="td-p-player-info">
-          <span className="td-p-battletag font-ponter">{player.battle_tag || '—'}</span>
-          <span className="td-p-nickname font-digits">{(player.display_name || '').toUpperCase()}</span>
+          <span className="td-p-battletag">{player.battle_tag || (player.display_name || '').toUpperCase()}</span>
+          <div className="td-p-sub-name">
+            <img src="/assets/icons/discord.svg" alt="" className="td-p-discord-icon" />
+            {(player.display_name || '').toUpperCase()}
+          </div>
         </div>
       </div>
-      {player.bio && <p className="td-p-bio font-ponter">{player.bio}</p>}
+      {player.bio && <p className="td-p-bio">{player.bio}</p>}
+      <div className="td-p-divider"></div>
       <div className="td-p-card-footer">
         <div className={`td-p-checkin ${checkedIn ? 'td-p-checkin-on' : ''}`}>
           <img src={checkedIn ? '/assets/icons/icon-check-in-on.svg' : '/assets/icons/icon-check-in.svg'} alt="" className="td-p-checkin-icon" />
-          <span className="font-palui">CHECK-IN</span>
+          <span>CHECK-IN</span>
         </div>
         <div className={`td-p-allowed ${allowed ? 'td-p-allowed-yes' : 'td-p-allowed-no'}`}>
           {allowed && <img src="/assets/icons/icon-allowed.svg" alt="" className="td-p-allowed-icon" />}
-          <span className="font-palui">{allowed ? 'ALLOWED' : 'NOT ALLOWED'}</span>
+          <span>{allowed ? 'ALLOWED' : 'NOT ALLOWED'}</span>
         </div>
       </div>
     </div>
@@ -117,14 +146,15 @@ function ParticipantCard({ player, index }) {
 export default function TournamentDetail() {
   const { id } = useParams()
   const { user } = useAuth()
-  
+  const [searchParams] = useSearchParams()
+
   const [tournament, setTournament] = useState(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [message, setMessage] = useState(null)
-  
+
   const [myStatus, setMyStatus] = useState(null)
-  const [activeTab, setActiveTab] = useState('information')
+  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'information')
   const [participantsTab, setParticipantsTab] = useState('players')
   const [searchQuery, setSearchQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
@@ -134,6 +164,14 @@ export default function TournamentDetail() {
   
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
   const [userBattletags, setUserBattletags] = useState([])
+
+  // Синхронизация activeTab с URL query-параметром
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab && ['information', 'bracket', 'schedule', 'participants', 'history'].includes(tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
 
   // Загрузка турнира
   useEffect(() => {
@@ -378,11 +416,11 @@ export default function TournamentDetail() {
                 
                 {user?.role === 'admin' && (
                   <Link
-                    to={`/admin/tournaments/${id}/applications`}
+                    to={`/admin/tournaments/${id}/dashboard`}
                     className="td-btn font-palui"
                     style={{ backgroundColor: '#13c8b0', color: 'white', flex: '1 1 100%', textAlign: 'center' }}
                   >
-                    АДМИН-ПАНЕЛЬ
+                    ЦЕНТР УПРАВЛЕНИЯ
                   </Link>
                 )}
               </div>
@@ -400,7 +438,13 @@ export default function TournamentDetail() {
                   <button
                     key={tab.key}
                     className={`td-tab font-digits ${activeTab === tab.key ? 'td-tab--active' : ''}`}
-                    onClick={() => setActiveTab(tab.key)}
+                    onClick={() => {
+                      setActiveTab(tab.key)
+                      const newUrl = tab.key === 'information'
+                        ? `/tournaments/${id}`
+                        : `/tournaments/${id}?tab=${tab.key}`
+                      window.history.replaceState(null, '', newUrl)
+                    }}
                   >
                     {tab.label}
                   </button>
@@ -410,74 +454,38 @@ export default function TournamentDetail() {
               <div className="td-tab-body">
                 {activeTab === 'information' && (
                   <div className="td-info">
-                    <div className="td-section">
-                      <h2 className="td-section-title font-palui">ОБЩАЯ ИНФОРМАЦИЯ</h2>
-                      <div className="td-section-body">
-                        <p className="font-montserrat">
-                          <span className="td-label">Платформа:</span> ПК
-                        </p>
-                        <p className="font-montserrat">
-                          <span className="td-label">Формат:</span> {getFormatLabel(tournament.format)}
-                        </p>
-                        <p className="td-desc font-montserrat">
-                          *В формате микс-турнира команды формируются организаторами с помощью инструментов для баланса команд. Основной принцип формирования команд — баланс среднего рейтинга между всеми командами.
-                        </p>
+                    {tournament.description_general && (
+                      <div className="td-section">
+                        <h2 className="td-section-title font-palui">ОБЩАЯ ИНФОРМАЦИЯ</h2>
+                        <div className="td-section-body td-section-body-html">
+                          <div className="td-html-content font-montserrat" dangerouslySetInnerHTML={{ __html: tournament.description_general }} />
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    <div className="td-section">
-                      <h2 className="td-section-title font-palui">ДАТЫ ПРОВЕДЕНИЯ:</h2>
-                      <div className="td-section-body">
-                        <p className="font-montserrat">
-                          <span className="td-label">День 1:</span> групповой этап - 28 марта, 16:00 по МСК
-                        </p>
-                        <p className="font-montserrat">
-                          <span className="td-label">День 2:</span> плей-офф - 29 марта, 16:00 по МСК
-                        </p>
-                        <p className="font-montserrat">
-                          <span className="td-label">Регистрация:</span> с 23 по 26 марта 23:59 по МСК
-                        </p>
-                        <p className="font-montserrat">
-                          <span className="td-label">Чек-ин:</span> 27 марта, с 16:00 по 19:00 по МСК
-                        </p>
-                        <p className="td-bold-line font-montserrat">
-                          Список команд будет опубликован 27 марта.
-                        </p>
+                    {tournament.description_dates && (
+                      <div className="td-section">
+                        <h2 className="td-section-title font-palui">ДАТЫ ПРОВЕДЕНИЯ</h2>
+                        <div className="td-section-body td-section-body-html">
+                          <div className="td-html-content font-montserrat" dangerouslySetInnerHTML={{ __html: tournament.description_dates }} />
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    <div className="td-section">
-                      <h2 className="td-section-title font-palui">ТРЕБОВАНИЯ ДЛЯ УЧАСТИЯ:</h2>
-                      <div className="td-section-body">
-                        <p className="font-montserrat">К участию допускаются игроки, соответствующие следующим условиям:</p>
-                        <ul className="td-req-list">
-                          <li className="font-montserrat">
-                            <span className="td-label">Минимальный рейтинг:</span> Золото 3 (на основной и дополнительной роли)
-                          </li>
-                          <li className="font-montserrat">
-                            <span className="td-label">Откалиброванный рейтинг</span> на обеих ролях в текущем сезоне
-                          </li>
-                          <li className="font-montserrat">
-                            Минимум <span className="td-label">100 часов</span> в игре на аккаунте
-                          </li>
-                          <li className="font-montserrat">
-                            <span className="td-label">Открытый профиль</span> (в игровых настройках сделать аккаунт открытым)
-                          </li>
-                          <li className="font-montserrat">
-                            Добавить в друзья аккаунт организаторов турнира - <span className="td-highlight">Steve#24919</span>
-                          </li>
-                          <li className="font-montserrat">
-                            <span className="td-label">Для стримеров:</span> установить задержку минимум 40 секунд
-                          </li>
-                          <li className="font-montserrat">
-                            Вся коммуникация команды во время турнира должна проходить <span className="td-highlight">в специально отведенном канале</span> на сервере MoonRise
-                          </li>
-                        </ul>
-                        <p className="td-note font-montserrat">
-                          Принимая участие в турнире MoonRise Mix участники автоматически соглашаются с регламентом его проведения.
-                        </p>
+                    {tournament.description_requirements && (
+                      <div className="td-section">
+                        <h2 className="td-section-title font-palui">ТРЕБОВАНИЯ ДЛЯ УЧАСТИЯ</h2>
+                        <div className="td-section-body td-section-body-html">
+                          <div className="td-html-content font-montserrat" dangerouslySetInnerHTML={{ __html: tournament.description_requirements }} />
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {!tournament.description_general && !tournament.description_dates && !tournament.description_requirements && (
+                      <div className="td-section">
+                        <p className="font-montserrat td-label">Описание турнира пока не заполнено.</p>
+                      </div>
+                    )}
                   </div>
                 )}
                 
@@ -524,13 +532,12 @@ export default function TournamentDetail() {
                         {ROLE_FILTERS.map(role => (
                           <button
                             key={role}
-                            className={`td-p-role-btn font-palui ${roleFilter === role ? 'td-p-role-btn--active' : ''}`}
+                            className={`td-p-role-btn ${roleFilter === role ? 'td-p-role-btn--active' : ''}`}
                             onClick={() => setRoleFilter(role)}
+                            title={role.toUpperCase()}
                           >
-                            {role !== 'all' && (
-                              <img src={`/assets/icons/icon-role-${role}.svg`} alt="" className="td-p-role-icon" />
-                            )}
-                            {role.toUpperCase()}
+                            <img src={`/assets/icons/icon-role-${role === 'all' ? 'tank' : role}.svg`} alt="" className="td-p-role-icon" />
+                            {role === 'all' ? 'ALL' : role.toUpperCase()}
                           </button>
                         ))}
                       </div>
@@ -542,10 +549,12 @@ export default function TournamentDetail() {
                         : filteredParticipants.length === 0
                           ? <p className="td-empty font-ponter">Нет участников</p>
                           : (
-                            <div className="td-p-grid">
-                              {filteredParticipants.map((p, i) => (
-                                <ParticipantCard key={p.id || i} player={p} index={i + 1} />
-                              ))}
+                            <div className="td-p-grid-wrapper">
+                              <div className="td-p-grid">
+                                {filteredParticipants.map((p, i) => (
+                                  <ParticipantCard key={p.id || i} player={p} index={i + 1} />
+                                ))}
+                              </div>
                             </div>
                           )
                     )}

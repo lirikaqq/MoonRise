@@ -16,4 +16,4 @@ RUN pip install --no-cache-dir --timeout=120 -r requirements.txt
 COPY . .
 
 # Запуск
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--timeout-graceful-shutdown", "5"]

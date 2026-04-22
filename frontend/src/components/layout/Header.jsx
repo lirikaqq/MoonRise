@@ -24,16 +24,16 @@ export default function Header() {
         </Link>
 
         <div className="home-header-right">
-          <a href="#" className="home-social">
+          <a href="#" className="corner-icon-link">
             <img src="/assets/icons/twitch.svg" alt="Twitch" />
           </a>
-          <a href="#" className="home-social">
+          <a href="#" className="corner-icon-link">
             <img src="/assets/icons/youtube.svg" alt="YouTube" />
           </a>
-          <a href="#" className="home-social">
+          <a href="#" className="corner-icon-link">
             <img src="/assets/icons/telegram.svg" alt="Telegram" />
           </a>
-          <a href="#" className="home-social">
+          <a href="#" className="corner-icon-link">
             <img src="/assets/icons/tiktok.svg" alt="TikTok" />
           </a>
 

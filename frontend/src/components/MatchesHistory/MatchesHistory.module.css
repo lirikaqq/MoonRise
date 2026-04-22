@@ -1,0 +1,124 @@
+/* MatchesHistory.module.css */
+
+.container {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(19, 200, 176, 0.35);
+  border-radius: 14px;
+  padding: 16px;
+  color: #d7ffe9;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.searchWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(13, 173, 145, 0.35);
+  border-radius: 12px;
+  padding: 10px 12px;
+  flex: 1 1 320px;
+}
+
+.searchIcon {
+  width: 18px;
+  height: 18px;
+  opacity: 0.9;
+}
+
+.searchInput {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #d7ffe9;
+  font-size: 14px;
+}
+
+.select {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(13, 173, 145, 0.35);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #d7ffe9;
+  font-size: 14px;
+  flex: 0 0 auto;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 760px;
+}
+
+.th {
+  text-align: left;
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(19, 200, 176, 0.35);
+  color: rgba(215, 255, 233, 0.95);
+  font-weight: 700;
+}
+
+.tr:nth-child(even) {
+  background: rgba(19, 200, 176, 0.06);
+}
+
+.tr:nth-child(odd) {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.td {
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(19, 200, 176, 0.18);
+  vertical-align: middle;
+}
+
+.logsBtn {
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid rgba(19, 200, 176, 0.35);
+  color: #d7ffe9;
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s ease;
+}
+
+.logsBtn:hover:not(:disabled) {
+  background: rgba(19, 200, 176, 0.12);
+}
+
+.logsState {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(19, 200, 176, 0.18);
+}
+
+.teamName {
+  color: #d7ffe9;
+  font-weight: 700;
+}
+
+.meta {
+  opacity: 0.85;
+  font-size: 12px;
+}

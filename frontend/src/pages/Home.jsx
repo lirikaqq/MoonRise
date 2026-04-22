@@ -13,11 +13,9 @@ export default function Home() {
     <div className="home-page">
       <Header />
       <HeroSection />
-      <div className="second-screen">
-        <UpcomingTournamentSection />
-        <StatsSection />
-        <Footer />
-      </div>
+      <UpcomingTournamentSection />
+      <StatsSection />
+      <Footer />
     </div>
   );
 }

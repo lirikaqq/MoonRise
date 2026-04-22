@@ -60,15 +60,19 @@ class DraftPick(Base):
     draft_session_id = Column(Integer, ForeignKey("draft_sessions.id", ondelete="CASCADE"), nullable=False)
     captain_id = Column(Integer, ForeignKey("draft_captains.id", ondelete="CASCADE"), nullable=False)
     picked_user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    
+
     pick_number = Column(Integer, nullable=False) # Глобальный номер пика (1, 2, 3...)
     round_number = Column(Integer, nullable=False) # Раунд (1, 2, 3...)
     assigned_role = Column(String, nullable=False) # tank, dps, support
-    
+
     is_auto_pick = Column(Boolean, default=False, nullable=False)
     picked_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Команда, в которую попал игрок (заполняется при завершении драфта)
+    team_id = Column(Integer, ForeignKey("teams.id", ondelete="SET NULL"), nullable=True)
 
     # Связи
     session = relationship("DraftSession", back_populates="picks")
     captain = relationship("DraftCaptain", back_populates="picks")
     picked_user = relationship("User")
+    team = relationship("Team", back_populates="draft_picks")

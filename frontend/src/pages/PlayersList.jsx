@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { playersApi } from '../api/players';
@@ -10,6 +10,7 @@ import { useDeleteItem } from '../hooks/useDeleteItem';
 import ConfirmModal from '../components/ConfirmModal/ConfirmModal';
 
 export default function PlayersList() {
+  const navigate = useNavigate();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -98,6 +99,7 @@ export default function PlayersList() {
                       )}
                       <Link
                         to={`/players/${player.id}`}
+                        state={{ from: { url: '/players', label: 'PLAYERS' } }}
                         className="profile-card"
                         style={{ textDecoration: 'none' }}
                       >

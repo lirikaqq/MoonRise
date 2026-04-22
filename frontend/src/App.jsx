@@ -4,17 +4,19 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Home from './pages/Home';
 import Tournaments from './pages/Tournaments';
 import TournamentDetail from './pages/TournamentDetail';
-import PlayerProfile from './pages/PlayerProfile';
+import PlayerProfilePage from './pages/PlayerProfilePage'; // Исправлен импорт
 import PlayersList from './pages/PlayersList';
-import AdminHomepage from './pages/AdminHomepage';
+import AdminHomepageSettings from './pages/AdminHomepageSettings';
 import AuthCallback from './pages/AuthCallback';
 import AdminTournamentsList from './pages/AdminTournamentsList';
 import AdminMatchUpload from './pages/AdminMatchUpload';
 import MatchDetail from './pages/MatchDetail';
-import PlayerProfileEdit from './pages/PlayerProfileEdit'; // Добавлен импорт
+import EncounterDetail from './pages/EncounterDetail';
+import PlayerProfileEdit from './pages/PlayerProfileEdit';
 import AdminApplications from './pages/AdminApplications';
 import AdminTournamentForm from './pages/AdminTournamentForm';
 import DraftPage from './pages/DraftPage';
+import TournamentAdminDashboard from './pages/TournamentAdminDashboard';
 
 const AdminRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -41,22 +43,22 @@ export default function App() {
           <Route path="/tournaments/:id" element={<TournamentDetail />} />
           
           <Route path="/players" element={<PlayersList />} />
-          <Route path="/players/:id" element={<PlayerProfile />} />
-          <Route path="/players/:id/edit" element={<PlayerProfileEdit />} /> {/* Добавлен маршрут */}
+          <Route path="/players/:id" element={<PlayerProfilePage />} />
+          <Route path="/players/:id/edit" element={<PlayerProfileEdit />} />
           
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/draft/:tournamentId" element={<DraftPage />} />
           <Route path="/matches/:id" element={<MatchDetail />} />
-          {/* <Route path="/encounters/:id" element={<div>Encounter page — coming soon</div>} /> */}
+          <Route path="/encounters/:id" element={<EncounterDetail />} />
 
           {/* АДМИНСКАЯ ЗОНА */}
-          <Route path="/admin/homepage" element={<AdminRoute><AdminHomepage /></AdminRoute>} />
+          <Route path="/admin/homepage" element={<AdminRoute><AdminHomepageSettings /></AdminRoute>} />
           <Route path="/admin/tournaments" element={<AdminRoute><AdminTournamentsList /></AdminRoute>} />
           <Route path="/admin/tournaments/new" element={<AdminRoute><AdminTournamentForm /></AdminRoute>} />
-          <Route path="/admin/matches/upload" element={<AdminRoute><AdminMatchUpload /></AdminRoute>} />
-          <Route path="/admin/tournaments/:tournamentId/applications" element={<AdminApplications />} />
-          <Route path="/admin/tournaments/new" element={<AdminTournamentForm />} />
           <Route path="/admin/tournaments/:id/edit" element={<AdminRoute><AdminTournamentForm /></AdminRoute>} />
+          <Route path="/admin/matches/upload" element={<AdminRoute><AdminMatchUpload /></AdminRoute>} />
+          <Route path="/admin/tournaments/:tournamentId/applications" element={<AdminRoute><AdminApplications /></AdminRoute>} />
+          <Route path="/admin/tournaments/:id/dashboard" element={<AdminRoute><TournamentAdminDashboard /></AdminRoute>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

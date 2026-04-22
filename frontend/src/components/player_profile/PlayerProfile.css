@@ -1,0 +1,164 @@
+/* ============================================================
+   PlayerProfile.css — Корневой layout страницы
+   3 горизонтальные полосы через CSS Grid
+   ============================================================ */
+
+:root {
+  /* Основные цвета */
+  --bg-page: #0D1419;
+  --bg-dark: #0A1118;
+  --block-bg: #111B25;
+  --block-bg-light: rgba(19, 173, 145, 0.08);
+  --tab-active-bg: #23423F;
+
+  /* Accent цвета */
+  --accent: #13AD91;
+  --accent-light: #A7F2A2;
+  --accent-light-dim: rgba(167, 242, 162, 0.08);
+  --button-bg: #23423F;
+
+  /* Текстовые цвета */
+  --text-primary: #A7F2A2;
+  --text-accent: #13AD91;
+  --text-dim: #23423F;
+
+  /* Шрифты */
+  --font-digits: 'Digits', sans-serif;
+  --font-ponter: 'Ponter', sans-serif;
+  --font-st: 'Digits', sans-serif;
+  --font-arial: 'Arial Black', sans-serif;
+  --font-montserrat: 'Montserrat', sans-serif;
+  --font-arial-body: 'Arial', sans-serif;
+
+  /* Размеры полос */
+  --band1-height: 255px;
+  --band2-height: 160px;
+  --band3-height: 250px;
+  --band-row-gap: 20px;
+
+  /* Размеры колонок */
+  --col-left-width: 450px;
+  --col-right-width: 1120px;
+
+  /* Отступы */
+  --page-padding-x: 148px;
+
+  /* Clip-path скосы — единые переменные для всех карточек */
+  --skew-playercard: 30px;
+  --skew-card-small: 20px;
+  --skew-card-large: 30px;
+  --skew-achievement: 30px;
+  --skew-division: 30px;
+  --skew-tophero: 30px;
+  --skew-stats-block: 10px;
+}
+
+/* ============================================================
+   Общий layout страницы
+   ============================================================ */
+
+.profile-page {
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 0 var(--page-padding-x);
+  min-height: 100vh;
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  font-family: "Ponter", sans-serif;
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.breadcrumbs a {
+  color: var(--accent-light);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.breadcrumbs a:hover {
+  opacity: 1;
+}
+
+.breadcrumbs .separator {
+  color: var(--accent-light);
+}
+
+.breadcrumbs .current {
+  color: var(--accent-light);
+  opacity: 1;
+}
+
+/* ============================================================
+   3-полосный Grid layout
+   ============================================================ */
+
+.profile-bands {
+  display: grid;
+  grid-template-columns: var(--col-left-width) var(--col-right-width);
+  gap: var(--band-row-gap);
+}
+
+/* Band 1: PlayerCard + верхние статы */
+.profile-band-1 {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: var(--col-left-width) 1fr;
+  gap: var(--band-row-gap);
+  align-items: end;
+}
+
+.profile-band-1 .profile-left {
+  grid-column: 1;
+}
+
+.profile-band-1 .profile-right-content {
+  grid-column: 2;
+}
+
+/* Band 2: Achievements + нижние статы */
+.profile-band-2 {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: var(--col-left-width) 1fr;
+  gap: var(--band-row-gap);
+  align-items: start;
+}
+
+.profile-band-2 .profile-left {
+  grid-column: 1;
+}
+
+.profile-band-2 .profile-right-content {
+  grid-column: 2;
+}
+
+/* Band 3: Divisions + Top Heroes */
+.profile-band-3 {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: var(--col-left-width) 1fr;
+  gap: var(--band-row-gap);
+  align-items: start;
+}
+
+.profile-band-3 .profile-left {
+  grid-column: 1;
+}
+
+.profile-band-3 .profile-right-content {
+  grid-column: 2;
+}
+
+/* Правая полоса с табами */
+.profile-right-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}

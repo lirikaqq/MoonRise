@@ -1,82 +1,79 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_
-from app.models.tournament import Tournament
-from app.schemas.tournament import TournamentCreate, TournamentUpdate
+from sqlalchemy import select, func, and_, delete
+from sqlalchemy.orm import selectinload, joinedload
+from app.models.tournament import Tournament, TournamentParticipant
+from app.models.player_replacement import PlayerReplacement
+from app.models.match import Team, Encounter
+from app.models.user import User
+from app.schemas.tournament import (
+    TournamentCreate, 
+    TournamentUpdate, 
+    ReplacePlayerRequest, 
+    ReplacementResponse, 
+    TeamWithHistoryResponse
+)
 from fastapi import HTTPException
-from typing import Optional
+from typing import Optional, Dict, List
 import logging
-from sqlalchemy.orm import joinedload
 from collections import defaultdict
-from app.models.match import Encounter
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
+
+
+class TeamConfigImmutableError(HTTPException):
+    """Выбрасывается при попытке изменить team_config после начала турнира."""
+    def __init__(self, detail: str = "team_config is immutable: teams, draft_session or encounters already exist"):
+        super().__init__(status_code=409, detail=detail)
 
 
 class TournamentService:
     """Сервис для работы с турнирами."""
 
     @staticmethod
-    async def get_all(
-        db: AsyncSession,
-        format: Optional[str] = None,
-        search: Optional[str] = None,
-        skip: int = 0,
-        limit: int = 20
-    ) -> list[Tournament]:
-        """Получить список турниров с фильтрацией."""
-        query = select(Tournament).where(Tournament.is_active == True)
-
-        if format and format != "all":
-            query = query.where(Tournament.format == format)
-
-        if search:
-            query = query.where(
-                Tournament.title.ilike(f"%{search}%")
+    async def assert_can_modify_team_config(tournament: Tournament, db: AsyncSession) -> None:
+        """Центральная проверка иммутабельности team_config."""
+        await db.execute(
+            select(Tournament)
+            .options(
+                selectinload(Tournament.teams),
+                selectinload(Tournament.draft_session),
+                selectinload(Tournament.encounters),
             )
-
-        query = query.order_by(
-            Tournament.is_featured.desc(),
-            Tournament.start_date.desc()
+            .where(Tournament.id == tournament.id)
         )
+        await db.refresh(tournament)
 
-        query = query.offset(skip).limit(limit)
-        result = await db.execute(query)
-        return result.scalars().all()
+        if tournament.teams and len(tournament.teams) > 0:
+            raise TeamConfigImmutableError("Cannot modify team_config: teams already exist")
+
+        if tournament.draft_session is not None:
+            raise TeamConfigImmutableError("Cannot modify team_config: draft session already started")
+
+        if tournament.encounters and len(tournament.encounters) > 0:
+            raise TeamConfigImmutableError("Cannot modify team_config: encounters already exist")
+
+        logger.info(f"team_config modification allowed for tournament {tournament.id}")
 
     @staticmethod
-    async def get_by_id(db: AsyncSession, tournament_id: int) -> Tournament:
-        """Получить турнир по ID."""
-        result = await db.execute(
-            select(Tournament).where(Tournament.id == tournament_id)
-        )
+    async def get_by_id(
+        db: AsyncSession, 
+        tournament_id: int, 
+        load_relations: bool = False
+    ) -> Tournament:
+        query = select(Tournament)
+        if load_relations:
+            query = query.options(
+                selectinload(Tournament.teams),
+                selectinload(Tournament.draft_session),
+                selectinload(Tournament.encounters),
+            )
+
+        result = await db.execute(query.where(Tournament.id == tournament_id))
         tournament = result.scalar_one_or_none()
 
         if not tournament:
             raise HTTPException(status_code=404, detail="Tournament not found")
-
-        return tournament
-
-    @staticmethod
-    async def create(db: AsyncSession, data: TournamentCreate) -> Tournament:
-        """Создать новый турнир."""
-        tournament = Tournament(
-            title=data.title,
-            description=data.description,
-            format=data.format,
-            cover_url=data.cover_url,
-            start_date=data.start_date,
-            end_date=data.end_date,
-            registration_open=data.registration_open,
-            registration_close=data.registration_close,
-            checkin_open=data.checkin_open,
-            checkin_close=data.checkin_close,
-            max_participants=data.max_participants,
-            status="upcoming",
-        )
-        db.add(tournament)
-        await db.commit()
-        await db.refresh(tournament)
-        logger.info(f"✅ Tournament created: {tournament.title}")
         return tournament
 
     @staticmethod
@@ -85,31 +82,28 @@ class TournamentService:
         tournament_id: int,
         data: TournamentUpdate
     ) -> Tournament:
-        """Обновить турнир."""
-        tournament = await TournamentService.get_by_id(db, tournament_id)
+        """Обновление турнира с защитой team_config."""
+        tournament = await TournamentService.get_by_id(db, tournament_id, load_relations=True)
 
         update_data = data.model_dump(exclude_unset=True)
+
+        if "team_config" in update_data and update_data.get("team_config") is not None:
+            await TournamentService.assert_can_modify_team_config(tournament, db)
+
         for field, value in update_data.items():
-            setattr(tournament, field, value)
+            if value is not None:
+                setattr(tournament, field, value)
 
         await db.commit()
         await db.refresh(tournament)
         return tournament
 
-    # 👇 ИЗМЕНЕНО: Заменили старый soft-delete на новый hard-delete.
-    # Этот метод теперь выполняет полное удаление из БД.
     @staticmethod
     async def delete_tournament(db: AsyncSession, tournament_id: int) -> Optional[Tournament]:
         """Удаляет турнир и все связанные с ним данные (hard delete)."""
         tournament = await TournamentService.get_by_id(db, tournament_id)
-        
-        # Благодаря cascade="all, delete-orphan" в модели Tournament,
-        # SQLAlchemy автоматически удалит все дочерние записи:
-        # participants, teams, encounters, matches и т.д.
         await db.delete(tournament)
         await db.commit()
-        
-        # Возвращаем объект для формирования сообщения в роутере
         return tournament
 
     @staticmethod
@@ -131,11 +125,10 @@ class TournamentService:
         await db.commit()
         await db.refresh(tournament)
         return tournament
-    
+
     @staticmethod
     async def get_bracket(db: AsyncSession, tournament_id: int) -> dict:
         """Собирает все матчи турнира и возвращает JSON сетки."""
-        
         await TournamentService.get_by_id(db, tournament_id)
 
         query = (
@@ -194,3 +187,201 @@ class TournamentService:
             upper_bracket[-2]["round_name"] = "SEMI-FINAL"
 
         return {"upper_bracket": upper_bracket}
+
+    @staticmethod
+    async def set_captain_status(
+        db: AsyncSession,
+        participant_id: int,
+        is_captain: bool
+    ) -> TournamentParticipant:
+        result = await db.execute(
+            select(TournamentParticipant).where(TournamentParticipant.id == participant_id)
+        )
+        participant = result.scalar_one_or_none()
+
+        if not participant:
+            raise HTTPException(status_code=404, detail="Tournament participant not found")
+
+        participant.is_captain = is_captain
+        await db.commit()
+        await db.refresh(participant)
+        return participant
+
+    @staticmethod
+    async def get_tournament_captains(
+        db: AsyncSession,
+        tournament_id: int
+    ) -> list[TournamentParticipant]:
+        result = await db.execute(
+            select(TournamentParticipant)
+            .options(joinedload(TournamentParticipant.user))
+            .where(
+                and_(
+                    TournamentParticipant.tournament_id == tournament_id,
+                    TournamentParticipant.is_captain == True
+                )
+            )
+            .order_by(TournamentParticipant.registered_at)
+        )
+        return result.scalars().all()
+
+    # ====================== СИСТЕМА ЗАМЕНЫ ИГРОКОВ ======================
+
+    @staticmethod
+    async def replace_player(
+        db: AsyncSession,
+        tournament_id: int,
+        team_id: int,
+        old_participant_id: int,
+        new_participant_id: int,
+        replaced_by_user_id: int,
+        reason: Optional[str] = None,
+    ) -> Dict:
+        """
+        Заменяет игрока в команде турнира.
+        Только для админа.
+        """
+        tournament = await TournamentService.get_by_id(db, tournament_id, load_relations=True)
+
+        result = await db.execute(
+            select(TournamentParticipant)
+            .where(TournamentParticipant.id.in_([old_participant_id, new_participant_id]))
+        )
+        participants = {p.id: p for p in result.scalars().all()}
+
+        old_p = participants.get(old_participant_id)
+        new_p = participants.get(new_participant_id)
+
+        if not old_p or not new_p:
+            raise HTTPException(status_code=404, detail="One or both participants not found")
+
+        if old_p.team_id != team_id:
+            raise HTTPException(status_code=400, detail="Old participant does not belong to this team")
+
+        if new_p.team_id is not None and new_p.team_id != team_id:
+            raise HTTPException(status_code=400, detail="New participant is already in another team")
+
+        if not old_p.is_active:
+            raise HTTPException(status_code=400, detail="Old participant is not active")
+
+        # Создаём запись о замене
+        replacement = PlayerReplacement(
+            tournament_id=tournament_id,
+            team_id=team_id,
+            old_participant_id=old_participant_id,
+            new_participant_id=new_participant_id,
+            replaced_by_user_id=replaced_by_user_id,
+            reason=reason,
+            previous_is_captain=old_p.is_captain,
+        )
+
+        db.add(replacement)
+
+        # Обновляем участников
+        old_p.is_active = False
+        new_p.is_active = True
+        new_p.team_id = team_id
+
+        # Если заменяли капитана — передаём статус
+        if old_p.is_captain:
+            old_p.is_captain = False
+            new_p.is_captain = True
+
+        await db.commit()
+        await db.refresh(replacement)
+        await db.refresh(old_p)
+        await db.refresh(new_p)
+
+        logger.info(f"Player replaced in tournament {tournament_id}, team {team_id}: "
+                   f"{old_participant_id} → {new_participant_id} by user {replaced_by_user_id}")
+
+        return {
+            "success": True,
+            "replacement": ReplacementResponse.model_validate(replacement),
+            "old_participant": {"id": old_p.id, "username": old_p.user.username if old_p.user else None},
+            "new_participant": {"id": new_p.id, "username": new_p.user.username if new_p.user else None},
+        }
+
+
+    @staticmethod
+    async def undo_replace(
+        db: AsyncSession,
+        replacement_id: int,
+        undone_by_user_id: int
+    ) -> Dict:
+        """
+        Откатывает замену игрока.
+        """
+        result = await db.execute(
+            select(PlayerReplacement)
+            .options(
+                joinedload(PlayerReplacement.old_participant),
+                joinedload(PlayerReplacement.new_participant)
+            )
+            .where(PlayerReplacement.id == replacement_id)
+        )
+        replacement = result.scalar_one_or_none()
+
+        if not replacement:
+            raise HTTPException(status_code=404, detail="Replacement record not found")
+
+        # Восстанавливаем старого участника
+        replacement.old_participant.is_active = True
+        replacement.new_participant.is_active = False
+        replacement.new_participant.team_id = None
+
+        if replacement.previous_is_captain:
+            replacement.old_participant.is_captain = True
+            replacement.new_participant.is_captain = False
+
+        await db.delete(replacement)
+        await db.commit()
+
+        logger.info(f"Replacement {replacement_id} undone by user {undone_by_user_id}")
+
+        return {
+            "success": True,
+            "message": "Replacement successfully undone",
+            "restored_participant_id": replacement.old_participant_id
+        }
+
+
+    @staticmethod
+    async def get_team_with_history(
+        db: AsyncSession,
+        team_id: int
+    ) -> Dict:
+        """
+        Возвращает состав команды + историю замен.
+        """
+        result = await db.execute(
+            select(Team)
+            .options(
+                selectinload(Team.tournament_participants.and_(TournamentParticipant.is_active == True)),
+                selectinload(Team.tournament_participants.and_(TournamentParticipant.is_active == False))
+            )
+            .where(Team.id == team_id)
+        )
+        team = result.scalar_one_or_none()
+
+        if not team:
+            raise HTTPException(status_code=404, detail="Team not found")
+
+        replacements_result = await db.execute(
+            select(PlayerReplacement)
+            .options(
+                joinedload(PlayerReplacement.old_participant),
+                joinedload(PlayerReplacement.new_participant),
+                joinedload(PlayerReplacement.replaced_by_user)
+            )
+            .where(PlayerReplacement.team_id == team_id)
+            .order_by(PlayerReplacement.replaced_at.desc())
+        )
+
+        return {
+            "team": team,
+            "active_participants": [p for p in team.tournament_participants if p.is_active],
+            "replacement_history": [
+                ReplacementResponse.model_validate(r) for r in replacements_result.scalars().all()
+            ]
+        }

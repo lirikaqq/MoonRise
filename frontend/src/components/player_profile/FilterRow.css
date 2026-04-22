@@ -1,0 +1,164 @@
+/* ============================================================
+   FilterRow.css — Строка фильтров под табами
+   Dropdown + Playtime + Maps + Win/Lose
+   ============================================================ */
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  gap: 0;
+  margin-top: 25px; /* от нижней линии табов (cyan линии) */
+}
+
+/* ============================================================
+   Dropdown "MOONRISE MIX VOL. 3"
+   Width: 325, Height: 40
+   Padding: top 11 / right 172 / bottom 14 / left 22
+   Border-radius: 5
+   Gap текст→стрелка: 129
+   Стрелка: 25×15
+   Шрифт: Ponter
+   ============================================================ */
+
+.filter-row__dropdown {
+  width: 325px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 10px 22px 11px 22px;
+  background: var(--block-bg);
+  border: 1px solid var(--tournament-accent);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.filter-row__dropdown-text {
+  font-family: var(--font-ponter);
+  font-size: 17px;
+  color: var(--tournament-accent-light);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filter-row__dropdown:hover {
+  border-color: var(--accent-light);
+}
+
+.filter-row__dropdown-icon {
+  width: 25px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Playtime блок (иконка + "3.6. PLAYTIME")
+   Gap dropdown→иконка часов: 50
+   Gap иконка→текст: 15
+   Шрифт: ST-SimpleSquare, 18px
+   ============================================================ */
+
+.filter-row__playtime {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: 50px;
+  flex-shrink: 0;
+}
+
+.filter-row__playtime-icon {
+  width: 25px;
+  height: 25px;
+  flex-shrink: 0;
+}
+
+.filter-row__playtime-text {
+  font-family: "Digits", sans-serif;
+  font-size: 18px;
+  color: var(--tournament-accent-light);
+  letter-spacing: 0.05em;
+  font-weight: normal;
+}
+
+/* ============================================================
+   Maps блок (треугольник + "10 MAPS")
+   Gap playtime→треугольник: 50
+   Gap треугольник→текст: 15
+   Шрифт: ST-SimpleSquare, 18px
+   ============================================================ */
+
+.filter-row__maps {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: 50px;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.filter-row__maps-icon {
+  width: 17px;
+  height: 25px;
+  flex-shrink: 0;
+}
+
+.filter-row__maps-text {
+  font-family: "Digits", sans-serif;
+  font-size: 18px;
+  color: var(--tournament-accent-light);
+  font-weight: normal;
+  font-synthesis: none
+}
+
+/* ============================================================
+   Win/Lose блок ("8 WIN | 2 LOSE")
+   Диагональный срез через clip-path: оба блока скошены,
+   между ними просвет в 1px — виден фон родителя #111B25
+   ============================================================ */
+
+.filter-row__winlose {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  height: 40px;
+  width: 300px;
+  border-radius: 40px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 3px solid #111B25;
+  box-sizing: border-box;
+  background: #111B25;
+}
+
+.filter-row__win {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-dark);
+  font-family: var(--font-st);
+  font-size: 18px;
+  color: #111B25;
+  /* правый нижний угол срезан → диагональ ↘ */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+}
+
+.filter-row__lose {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-light);
+  font-family: var(--font-st);
+  font-size: 18px;
+  color: #111B25;
+  /* левый верхний угол срезан → диагональ ↘ */
+  clip-path: polygon(4px 0, 100% 0, 100% 100%, 0 100%);
+}

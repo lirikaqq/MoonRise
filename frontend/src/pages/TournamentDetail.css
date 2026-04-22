@@ -119,14 +119,17 @@
   flex-shrink: 0; 
 }
 
-.td-sidebar-name { 
-  margin: 0; 
+.td-sidebar-name {
+  margin: 0;
   font-size: 18px;
   color: #13AD91;
-  text-transform: uppercase; 
-  line-height: 1.1; 
+  text-transform: uppercase;
+  line-height: 1.2;
   letter-spacing: 0.05em;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 /* Мета: 20px от названия */
@@ -373,164 +376,351 @@
 }
 
 /* ===========================
-   PARTICIPANTS
+   PARTICIPANTS — по макету Figma
    =========================== */
 .td-participants { display: flex; flex-direction: column; gap: 16px; }
 
+/* --- БЛОК 1: Суб-вкладки (УЧАСТНИКИ / КОМАНДЫ) --- */
 .td-p-subtabs {
   display: flex;
   align-items: flex-end;
-  height: 40px;
-  border-bottom: 1px solid rgba(19,200,176,0.2);
+  width: 100%;
+  margin-bottom: 30px;
 }
 .td-p-subtab {
-  height: 40px;
-  padding: 0 24px 14px;
-  font-size: 13px;
-  color: rgba(19,200,176,0.45);
+  height: 45px;
+  min-width: 280px;
+  padding: 0 13px;
+  font-size: 19px;
+  font-family: "Ponter", "Digits", monospace;
+  color: rgba(167,242,162,0.3);
   background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
+  border-bottom: 5px solid transparent;
   cursor: pointer;
   transition: all 0.2s;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1;
 }
-.td-p-subtab:hover { color: var(--accent); }
+.td-p-subtab:hover { color: rgba(167,242,162,0.6); }
 .td-p-subtab--active {
-  color: var(--accent-light);
-  border-bottom-color: var(--tournament-accent);
+  color: var(--tournament-accent-light);
+  border-bottom-color: var(--tournament-accent-light);
 }
 
+/* --- БЛОК 2: Панель управления (Поиск + Фильтры) --- */
 .td-p-controls {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
 }
 .td-p-search-wrap {
   position: relative;
-  flex: 1;
-  min-width: 180px;
+  width: 325px;
+  height: 40px;
+  flex-shrink: 0;
 }
 .td-p-search-icon {
   position: absolute;
-  left: 10px;
+  left: 17px;
   top: 50%;
   transform: translateY(-50%);
   width: 16px;
   height: 16px;
-  opacity: 0.5;
+  opacity: 0.6;
 }
 .td-p-search {
-  width: 100%;
-  height: 36px;
-  padding: 0 12px 0 34px;
-  background: rgba(17,27,37,0.9);
-  border: 1px solid rgba(19,200,176,0.25);
+  width: 325px;
+  max-width: 100%;
+  height: 40px;
+  padding: 0 12px 0 49px;
+  background: var(--block-bg);
+  border: 1px solid var(--tournament-accent);
   color: var(--accent);
-  font-size: 13px;
+  font-family: "Ponter", sans-serif;
+  font-size: 18px;
+  text-transform: uppercase;
   outline: none;
   box-sizing: border-box;
 }
-.td-p-search::placeholder { color: rgba(19,200,176,0.35); }
+.td-p-search::placeholder {
+  color: var(--tournament-accent-light);
+}
 
-.td-p-roles { display: flex; gap: 6px; flex-wrap: wrap; }
+.td-p-roles {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 4px;
+  border: 1px solid var(--tournament-accent);
+  border-radius: 6px;
+  background: rgba(17,27,37,0.6);
+}
 .td-p-role-btn {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 0 12px;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
   height: 36px;
-  font-size: 11px;
-  color: rgba(19,200,176,0.5);
-  background: transparent;
-  border: 1px solid rgba(19,200,176,0.2);
+  min-width: 40px;
+  font-size: 13px;
+  font-family: "Ponter", sans-serif;
+  color: rgba(167,242,162,0.4);
+  background: rgba(35,66,63,0.7);
+  border: 1px solid transparent;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
   text-transform: uppercase;
 }
-.td-p-role-btn:hover { color: var(--accent); border-color: var(--accent); }
+.td-p-role-btn:hover { color: var(--tournament-accent-light); }
 .td-p-role-btn--active {
   color: var(--bg) !important;
-  background: var(--accent) !important;
-  border-color: var(--accent) !important;
+  background: var(--tournament-accent) !important;
+  border-color: var(--tournament-accent) !important;
 }
-.td-p-role-icon { width: 13px; height: 13px; }
+.td-p-role-icon { width: 14px; height: 14px; }
 
+/* --- БЛОК 3: Контейнер с рамкой и скроллбаром --- */
+.td-p-grid-wrapper {
+  position: relative;
+  border: 1px solid var(--tournament-accent);
+  clip-path: polygon(
+    20px 0, calc(100% - 20px) 0,
+    100% 20px, 100% calc(100% - 20px),
+    calc(100% - 20px) 100%, 20px 100%,
+    0 calc(100% - 20px), 0 20px
+  );
+  padding: 20px;
+  max-height: 600px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--tournament-accent) transparent;
+}
+.td-p-grid-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+.td-p-grid-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+.td-p-grid-wrapper::-webkit-scrollbar-thumb {
+  background: var(--tournament-accent);
+  border-radius: 3px;
+}
+
+/* --- БЛОК 3: Сетка карточек --- */
 .td-p-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 20px;
 }
+
+/* --- БЛОК 4: Карточка участника --- */
 .td-p-card {
+  position: relative;
+  width: 100%;
+  min-height: 240px;
+  padding: 25px;
+  padding-left: 30px;
   background: var(--block-bg);
-  border: 1px solid rgba(19,200,176,0.15);
-  padding: 12px;
+  border: 1px solid var(--tournament-accent);
+  clip-path: polygon(
+    20px 0, 100% 0,
+    100% calc(100% - 20px), calc(100% - 20px) 100%,
+    0 100%, 0 20px
+  );
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
-.td-p-card:hover { border-color: rgba(19,200,176,0.4); }
-.td-p-card-header { display: flex; align-items: center; justify-content: space-between; }
-.td-p-card-num { font-size: 14px; color: var(--accent); }
+
+/* Полоска слева 5px */
+.td-p-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: var(--tournament-accent);
+}
+
+/* Анимация при наведении */
+.td-p-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.td-p-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(19, 173, 145, 0.25);
+  border-color: #A7F2A2;
+}
+
+.td-p-card:hover::before {
+  background: #A7F2A2;
+  box-shadow: 0 0 12px rgba(167, 242, 162, 0.6);
+}
+
+/* Анимация при клике */
+.td-p-card--clicking {
+  animation: td-p-card-exit 0.3s ease-out forwards;
+}
+
+@keyframes td-p-card-exit {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+}
+
+/* Шапка карточки */
+.td-p-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.td-p-card-num {
+  font-family: "Digits", monospace;
+  font-size: 17px;
+  color: var(--tournament-accent-light);
+  letter-spacing: 0.05em;
+}
 .td-p-role-badge {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 7px;
-  border: 1px solid rgba(19,200,176,0.4);
-  font-size: 10px;
-  color: var(--accent);
+  width: 65px;
+  height: 30px;
+  padding: 0 7px;
+  background: transparent;
+  border: 1px solid var(--tournament-accent-light);
+  box-sizing: border-box;
+  justify-content: center;
 }
-.td-p-badge-icon { width: 10px; height: 10px; }
-.td-p-card-player { display: flex; align-items: center; gap: 8px; }
+.td-p-role-badge span {
+  font-family: "Ponter", sans-serif;
+  font-size: 15px;
+  color: var(--tournament-accent-light);
+}
+.td-p-badge-icon { width: 12px; height: 12px; }
+
+/* Инфо об игроке */
+.td-p-card-player {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
 .td-p-avatar {
-  width: 36px;
-  height: 36px;
+  width: 45px;
+  height: 45px;
   flex-shrink: 0;
   background: rgba(19,200,176,0.08);
-  border: 1px solid rgba(19,200,176,0.2);
-  overflow: hidden;
+  border: 1px solid var(--tournament-accent-light);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 .td-p-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.td-p-avatar-placeholder { font-size: 14px; color: var(--accent-dark); }
-.td-p-player-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.td-p-avatar-placeholder {
+  font-family: "Digits", monospace;
+  font-size: 18px;
+  color: var(--tournament-accent-light);
+}
+.td-p-player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
 .td-p-battletag {
-  font-size: 12px;
-  color: var(--accent);
+  font-family: "Ponter", sans-serif;
+  font-size: 15px;
+  color: var(--tournament-accent);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.td-p-nickname { font-size: 10px; color: rgba(19,200,176,0.5); }
+.td-p-sub-name {
+  font-family: "Ponter", sans-serif;
+  font-size: 11px;
+  color: var(--tournament-accent-light);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.td-p-discord-icon {
+  width: 12px;
+  height: 12px;
+  opacity: 0.6;
+}
+
+/* Био */
 .td-p-bio {
   margin: 0;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
   font-size: 11px;
-  line-height: 1.5;
-  color: rgba(255,255,255,0.5);
+  line-height: 16px;
+  color: var(--tournament-accent);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  margin-bottom: 16px;
 }
+
+/* Разделитель */
+.td-p-divider {
+  height: 1px;
+  background: rgba(167,242,162,0.2);
+  margin-bottom: 12px;
+}
+
+/* Подвал */
 .td-p-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 8px;
-  border-top: 1px solid rgba(19,200,176,0.08);
+  margin-top: auto;
 }
-.td-p-checkin { display: flex; align-items: center; gap: 4px; font-size: 10px; color: rgba(19,200,176,0.3); }
-.td-p-checkin-on { color: var(--accent); }
-.td-p-checkin-icon { width: 12px; height: 12px; }
-.td-p-allowed { display: flex; align-items: center; gap: 3px; font-size: 10px; }
-.td-p-allowed-yes { color: var(--accent-light); }
-.td-p-allowed-no  { color: rgba(255,80,80,0.6); }
-.td-p-allowed-icon { width: 10px; height: 10px; }
+.td-p-checkin {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Ponter", sans-serif;
+  font-size: 14px;
+  color: var(--button-bg);
+  text-transform: uppercase;
+}
+.td-p-checkin-on { color: var(--tournament-accent-light); }
+.td-p-checkin-icon { width: 14px; height: 14px; }
+.td-p-allowed {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Ponter", sans-serif;
+  font-size: 14px;
+  color: var(--tournament-accent-light);
+  text-transform: uppercase;
+}
+.td-p-allowed-yes { color: var(--tournament-accent-light); }
+.td-p-allowed-no  { color: var(--button-bg); }
+.td-p-allowed-icon { width: 12px; height: 12px; }
 
 /* ===========================
    ПРОЧЕЕ
@@ -600,6 +790,9 @@
 /* ===========================
    АДАПТИВ — только мобилки
    =========================== */
+@media (max-width: 1200px) {
+  .td-p-grid { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 900px) {
   .td-container { padding: 0 20px; }
   .td-grid { grid-template-columns: 1fr; gap: 32px; }
@@ -608,9 +801,11 @@
   .td-poster-img  { width: 100%; height: auto; }
   .td-poster-placeholder { width: 100%; height: 180px; }
   .td-btn { width: 100%; }
-  .td-p-grid { grid-template-columns: repeat(2,1fr); }
+  .td-p-search-wrap, .td-p-search { width: 100%; max-width: 325px; }
+  .td-p-controls { flex-direction: column; align-items: flex-start; }
 }
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .td-p-grid { grid-template-columns: 1fr; }
   .td-tab { padding: 0 8px 17px; font-size: 11px; }
+  .td-p-subtab { min-width: 160px; font-size: 15px; }
 }

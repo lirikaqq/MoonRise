@@ -1,455 +1,418 @@
+/* ============================================
+   PlayerProfile.css — корневой layout страницы
+   ============================================ */
+
 .profile-page {
+  background: transparent;
   min-height: 100vh;
-  background-color: var(--bg);
-  background-image: url("/assets/images/grid-bg.png");
-  background-repeat: repeat;
+  display: flex;
+  flex-direction: column;
 }
 
 .profile-main {
-  padding: 40px 0 60px;
-}
-
-.profile-container {
-  max-width: 1620px;
-  width: calc(100% - 40px);
+  flex: 1;
+  width: 1622px;
   margin: 0 auto;
+  padding: 0 60px 60px 60px;
+  box-sizing: border-box;
 }
 
-/* BREADCRUMB */
+/* Breadcrumb */
 .profile-breadcrumb {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 32px;
-  font-family: "Ponter", sans-serif;
-  font-size: 13px;
-  color: var(--accent-dark);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  gap: 8px;
+  padding: 20px 0 30px 0;
+  font-family: 'Digits', sans-serif;
+  font-size: 14px;
+  color: var(--tournament-accent);
 }
 
 .profile-breadcrumb a {
-  color: var(--accent-dark);
+  color: var(--tournament-accent);
   text-decoration: none;
-  transition: color 0.2s;
 }
 
-.profile-breadcrumb a:hover { color: var(--accent); }
+.profile-breadcrumb a:hover {
+  color: var(--tournament-accent-light);
+}
 
 .profile-breadcrumb-sep {
-  color: var(--accent);
-  font-size: 16px;
+  color: var(--tournament-accent);
+  opacity: 0.6;
 }
 
-.profile-breadcrumb span:last-child { color: var(--accent); }
+.profile-breadcrumb-back {
+  background: none;
+  border: none;
+  color: var(--tournament-accent);
+  font-family: 'Digits', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
 
-/* LAYOUT */
+.profile-breadcrumb-back:hover {
+  color: var(--tournament-accent-light);
+}
+
+/* Основной layout — 3 горизонтальные полосы */
+.player-profile-bands {
+  width: 1622px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 450px 1120px;
+  grid-template-rows: 255px 160px 250px;
+  column-gap: 52px;
+  row-gap: 20px;
+  align-items: stretch;
+}
+
+/* Каждая ячейка — band */
+.band {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Band 2 Right: StatsBottomRow центрируем по вертикали в ячейке 160px */
+.band--mid-right {
+  display: flex;
+  align-items: center;
+}
+
+/* Правая часть первой полосы — flex column для прижатия StatsTopRow вниз */
+.band-right--top {
+  height: 255px;
+  display: flex;
+  flex-direction: column;
+  width: 1120px;
+}
+
+/* Прижимаем StatsTopRow к низу первой полосы */
+.band-right--top .stats-top-row {
+  margin-top: auto;
+}
+
+/* Старый layout — оставляем для обратной совместимости */
 .profile-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 24px;
+  grid-template-columns: 450px 1120px;
+  column-gap: 52px;
   align-items: start;
+  width: 100%;
 }
 
-/* SIDEBAR */
-.profile-sidebar {
+/* Профиль-лефт */
+.profile-left {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  position: sticky;
-  top: 20px;
+  width: 450px;
+  flex-shrink: 0;
 }
 
-/* КАРТОЧКА профиля */
-.profile-card {
-  background: rgba(16, 39, 47, 0.84);
-  border: 1px solid var(--border);
-  padding: 32px 24px;
+.profile-right {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  text-align: center;
+  min-width: 0;
+  width: 1120px;
 }
 
-/* АВАТАР */
-.profile-avatar-wrap {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  margin-bottom: 8px;
-}
-
-.profile-avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--accent);
+/* Divider line */
+.profile-divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--tournament-accent-light);
+  margin-top: 40px;
   display: block;
+  flex-shrink: 0;
 }
 
-.profile-avatar-placeholder {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: rgba(19, 200, 176, 0.1);
-  border: 2px solid var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: "Palui", sans-serif;
-  font-size: 40px;
-  color: var(--accent);
-}
-
-.profile-avatar-border {
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  border: 1px solid rgba(19, 200, 176, 0.3);
-  animation: ring-rotate 8s linear infinite;
-}
-
-/* ИМЯ */
-.profile-username {
-  font-family: "Palui", sans-serif;
-  font-size: 24px;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin: 0;
-}
-
-/* РОЛЬ */
-.profile-role-badge {
-  font-family: "Ponter", sans-serif;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 4px 12px;
-  border: 1px solid;
-}
-
-.role-player {
-  color: var(--accent-dark);
-  border-color: rgba(19, 200, 176, 0.3);
-}
-
-.role-moderator {
-  color: #ffaa00;
-  border-color: rgba(255, 170, 0, 0.4);
-}
-
-.role-admin {
-  color: #ff5050;
-  border-color: rgba(255, 80, 80, 0.4);
-}
-
-/* BATTLETAG */
-.profile-battletag {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: "Ponter", sans-serif;
-  font-size: 13px;
-  color: var(--accent);
-  background: rgba(19, 200, 176, 0.08);
-  border: 1px solid rgba(19, 200, 176, 0.2);
-  padding: 6px 14px;
-  width: 100%;
-  justify-content: center;
-}
-
-/* ДИВИЗИОН */
-.profile-division {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 100%;
-}
-
-.profile-division-label {
-  font-family: "Ponter", sans-serif;
-  font-size: 11px;
-  color: var(--accent-dark);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.profile-division-value {
-  font-family: "Palui", sans-serif;
-  font-size: 16px;
-  color: var(--accent);
-  text-transform: uppercase;
-}
-
-/* СТАТУС */
-.profile-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.profile-status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 6px var(--accent);
-}
-
-.profile-status-text {
-  font-family: "Ponter", sans-serif;
-  font-size: 12px;
-  color: var(--accent-dark);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* СТАТИСТИКА */
-.profile-stats-card,
-.profile-tags-card {
-  background: rgba(16, 39, 47, 0.84);
-  border: 1px solid rgba(19, 200, 176, 0.3);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.profile-section-title {
-  font-family: "Ponter", sans-serif;
-  font-size: 13px;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.profile-section-dot {
-  color: var(--accent);
-  font-size: 18px;
-}
-
-.profile-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.profile-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 12px;
-  background: rgba(19, 200, 176, 0.05);
-  border: 1px solid rgba(19, 200, 176, 0.1);
-}
-
-.profile-stat-value {
-  font-family: "ST-SimpleSquare", monospace;
-  font-size: 24px;
-  color: var(--accent);
-}
-
-.profile-stat-label {
-  font-family: "Ponter", sans-serif;
-  font-size: 10px;
-  color: var(--accent-dark);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  text-align: center;
-}
-
-/* BATTLE TAGS */
-.profile-tags-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.profile-tag-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: rgba(19, 200, 176, 0.05);
-  border: 1px solid rgba(19, 200, 176, 0.1);
-}
-
-.profile-tag-text {
-  font-family: "Ponter", sans-serif;
-  font-size: 13px;
-  color: var(--accent);
-}
-
-.profile-tag-primary {
-  font-family: "Ponter", sans-serif;
-  font-size: 10px;
-  color: var(--accent-light);
-  border: 1px solid var(--accent-light);
-  padding: 2px 6px;
-  letter-spacing: 0.05em;
-}
-
-/* EDIT BTN */
-.profile-edit-btn {
-  width: 100%;
-  padding: 14px;
-  font-family: "Palui", sans-serif;
-  font-size: 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  background: transparent;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.profile-edit-btn:hover {
-  background: rgba(19, 200, 176, 0.08);
-  color: var(--accent-light);
-}
-
-/* CONTENT */
-.profile-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-/* ТАБЫ */
-.profile-tabs {
-  display: flex;
-  border-bottom: 1px solid rgba(19, 200, 176, 0.2);
-  margin-bottom: 24px;
-}
-
-.profile-tab {
-  font-family: "Ponter", sans-serif;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--accent-dark);
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: 12px 24px;
-  cursor: pointer;
-  transition: 0.2s ease;
-  margin-bottom: -1px;
-}
-
-.profile-tab:hover { color: var(--accent); }
-
-.profile-tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
-
-/* EMPTY STATE */
-.profile-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 0;
-  gap: 16px;
-  text-align: center;
-}
-
-.profile-empty-icon {
-  font-size: 48px;
-  opacity: 0.3;
-}
-
-.profile-empty-title {
-  font-family: "Palui", sans-serif;
-  font-size: 20px;
-  color: var(--accent-dark);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0;
-}
-
-.profile-empty-sub {
-  font-family: "Ponter", sans-serif;
-  font-size: 13px;
-  color: rgba(19, 200, 176, 0.4);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin: 0;
-}
-
-.profile-find-btn {
-  margin-top: 8px;
-  padding: 12px 32px;
-  font-family: "Palui", sans-serif;
-  font-size: 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--accent);
-  border: 1px solid var(--accent);
+/* Back link */
+.profile-back-link {
+  display: inline-block;
+  margin-top: 20px;
+  font-family: 'Digits', sans-serif;
+  font-size: 14px;
+  color: var(--tournament-accent);
   text-decoration: none;
-  transition: 0.2s ease;
 }
 
-.profile-find-btn:hover {
-  background: rgba(19, 200, 176, 0.08);
-  color: var(--accent-light);
+.profile-back-link:hover {
+  color: var(--tournament-accent-light);
 }
 
-/* LOADING / NOT FOUND */
+/* Loading / Error states */
 .profile-loading,
 .profile-not-found {
   display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-family: 'Digits', sans-serif;
+  font-size: 24px;
+  color: var(--tournament-accent);
+}
+
+/* Tournament history card (вкладка TOURNAMENTS) */
+.tournaments-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tournaments-tab-empty {
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 120px 0;
-  gap: 20px;
-  font-family: "Palui", sans-serif;
-  font-size: 16px;
-  color: var(--accent-dark);
-  letter-spacing: 0.05em;
+  text-align: center;
+  min-height: 300px;
+  padding: 40px;
 }
 
-.profile-loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 2px solid rgba(19, 200, 176, 0.2);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.tournaments-tab-empty-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
 }
 
-.profile-back-btn {
-  font-family: "Ponter", sans-serif;
-  font-size: 13px;
-  color: var(--accent-dark);
+.tournaments-tab-empty-title {
+  font-family: 'Ponter', sans-serif;
+  font-size: 20px;
+  color: var(--tournament-accent-light);
+  margin: 0 0 8px 0;
+}
+
+.tournaments-tab-empty-text {
+  color: var(--tournament-accent);
+  margin: 0 0 24px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+}
+
+.tournaments-tab-empty-link {
+  padding: 10px 30px;
+  background: var(--tournament-accent);
+  color: var(--block-bg);
   text-decoration: none;
-  text-transform: uppercase;
-  transition: color 0.2s;
+  font-family: 'Ponter', sans-serif;
+  font-size: 14px;
 }
 
-.profile-back-btn:hover { color: var(--accent); }
+/* Achievements tab */
+.achievements-tab-content {
+  width: 100%;
+  background-color: var(--block-bg);
+  padding: 20px;
+  box-sizing: border-box;
+}
 
-/* ADAPTIVE */
-@media (max-width: 1024px) {
+/* Tournament history card */
+.tournament-history-card {
+  display: flex;
+  gap: 16px;
+  background: var(--block-bg);
+  border: 1px solid var(--tournament-accent);
+  border-left: 4px solid var(--tournament-accent);
+  position: relative;
+  clip-path: polygon(
+    20px 0%,
+    100% 0%,
+    100% calc(100% - 20px),
+    calc(100% - 20px) 100%,
+    0% 100%,
+    0% 20px
+  );
+  padding: 16px;
+  text-decoration: none;
+  color: var(--text-soft);
+  transition: border-color 0.2s;
+}
+
+.tournament-history-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 1px;
+  height: 29px;
+  background: var(--tournament-accent);
+  transform-origin: bottom right;
+  transform: rotate(45deg);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tournament-history-card:hover {
+  border-color: var(--tournament-accent-light);
+}
+
+.tournament-history-cover {
+  width: 80px;
+  height: 60px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.tournament-history-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tournament-history-title {
+  font-family: 'Ponter', sans-serif;
+  font-size: 16px;
+  color: var(--tournament-accent-light);
+  margin: 0;
+}
+
+.tournament-history-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: var(--tournament-accent);
+}
+
+/* Responsive */
+@media (max-width: 1700px) {
+  .profile-main {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 1200px) {
   .profile-layout {
     grid-template-columns: 1fr;
+    gap: 30px;
   }
-  .profile-sidebar {
-    position: static;
+
+  .profile-left {
+    width: 100%;
+  }
+
+  .player-card {
+    width: 100%;
+    max-width: 450px;
+  }
+
+  .stats-top-row,
+  .stats-bottom-row {
+    grid-template-columns: repeat(2, 265px);
   }
 }
 
-@media (max-width: 600px) {
-  .profile-username { font-size: 20px; }
-  .profile-stats-grid { grid-template-columns: repeat(2, 1fr); }
+/* ============================================
+   Модалка добавления контактов
+   ============================================ */
+
+.contacts-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.contacts-modal {
+  background: var(--block-bg);
+  border: 2px solid var(--tournament-accent);
+  padding: 32px 28px;
+  width: 380px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  clip-path: polygon(
+    16px 0%,
+    100% 0%,
+    100% calc(100% - 16px),
+    calc(100% - 16px) 100%,
+    0% 100%,
+    0% 16px
+  );
+}
+
+.contacts-modal-title {
+  font-family: 'Ponter', sans-serif;
+  font-size: 18px;
+  color: var(--tournament-accent-light);
+  margin: 0;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.contacts-modal-label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: 'Ponter', sans-serif;
+  font-size: 13px;
+  color: var(--tournament-accent);
+}
+
+.contacts-modal-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  color: var(--tournament-accent-light);
+  background: #0d151c;
+  border: 1px solid var(--tournament-accent);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.contacts-modal-input::placeholder {
+  color: var(--tournament-accent);
+  opacity: 0.5;
+}
+
+.contacts-modal-input:focus {
+  border-color: var(--tournament-accent-light);
+  box-shadow: 0 0 0 2px rgba(167, 242, 162, 0.15);
+}
+
+.contacts-modal-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.contacts-modal-btn {
+  padding: 10px 28px;
+  font-family: 'Ponter', sans-serif;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.contacts-modal-btn.cancel {
+  background: var(--button-bg);
+  color: var(--tournament-accent-light);
+}
+
+.contacts-modal-btn.cancel:hover {
+  background: #2d5450;
+}
+
+.contacts-modal-btn.save {
+  background: var(--tournament-accent);
+  color: var(--block-bg);
+}
+
+.contacts-modal-btn.save:hover {
+  background: var(--tournament-accent-light);
 }

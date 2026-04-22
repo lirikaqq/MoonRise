@@ -177,23 +177,145 @@
 }
 
 /* Columns */
-.md-col-player { width: 22%; }
+.md-col-player { width: 20%; }
 .md-col-kda { width: 14%; white-space: nowrap; }
-.md-col-stat { width: 10%; text-align: right; }
+.md-col-fb { width: 5%; text-align: center; }
+.md-col-score { width: 8%; text-align: right; }
+.md-col-stat { width: 9%; text-align: right; }
 .md-col-acc { text-align: center; }
-.md-col-heroes { width: 18%; }
+.md-col-heroes { width: 14%; }
+
+.md-player-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
 
 .md-player-link {
   color: #fff;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 16px;
   transition: color 0.2s;
 }
 .md-player-link:hover { color: #A7F2A2; }
 
 .md-player-name {
-  color: rgba(255,255,255,0.7);
-  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+  font-size: 16px;
+}
+
+/* MVP/SVP Badges */
+.md-badges {
+  display: flex;
+  gap: 4px;
+  /* Гарантируем что нет лишних текстовых узлов */
+  font-size: 0;
+}
+
+.md-badges > * {
+  font-size: 9px;
+}
+
+.md-badge-mvp {
+  font-size: 9px;
+  padding: 2px 6px;
+  background: linear-gradient(135deg, rgba(167,242,162,0.2), rgba(19,200,176,0.2));
+  border: 1px solid #A7F2A2;
+  color: #A7F2A2;
+  letter-spacing: 0.1em;
+  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+}
+
+.md-badge-svp {
+  font-size: 9px;
+  padding: 2px 6px;
+  background: rgba(19,200,176,0.1);
+  border: 1px solid rgba(19,200,176,0.5);
+  color: rgba(19,200,176,0.8);
+  letter-spacing: 0.1em;
+  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+}
+
+/* First Blood */
+.md-fb-badge {
+  display: inline-block;
+  font-size: 11px;
+  color: #A7F2A2;
+  background: rgba(167,242,162,0.1);
+  padding: 2px 6px;
+  border: 1px solid rgba(167,242,162,0.3);
+}
+
+.md-fb-none {
+  font-size: 11px;
+  color: rgba(19,200,176,0.2);
+}
+
+/* CS Tooltip */
+.md-col-score--tooltip {
+  position: relative;
+  cursor: help;
+}
+
+/* Глобальный тултип — позиционируется под наведённым заголовком */
+.md-cs-tooltip--global {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  background: var(--block-bg);
+  border: 1px solid #13AD91;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  padding: 18px;
+  z-index: 9999;
+  animation: md-tooltip-global-in 0.25s ease-out;
+  pointer-events: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+@keyframes md-tooltip-global-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+.md-cs-tooltip-title {
+  font-family: 'PaluiSPDemo-Bold', sans-serif;
+  font-size: 13px;
+  color: #A7F2A2;
+  margin-bottom: 4px;
+  letter-spacing: 0.05em;
+}
+
+.md-cs-tooltip-desc {
+  font-family: 'Ponter', sans-serif;
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 10px;
+}
+
+.md-cs-tooltip-formula {
+  font-family: 'Ponter', sans-serif;
+  font-size: 9px;
+  color: #13AD91;
+  line-height: 1.6;
+  padding: 8px 10px;
+  background: rgba(19,200,176,0.06);
+  border-left: 2px solid #13AD91;
+  margin-bottom: 8px;
+}
+
+.md-cs-tooltip-note {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 8px;
+  color: rgba(167,242,162,0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* KDA colors */
@@ -218,10 +340,106 @@
   letter-spacing: 0.05em;
   cursor: help;
   transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 .md-hero-badge:hover {
   border-color: rgba(19,200,176,0.4);
   color: var(--accent);
+}
+
+.md-hero-last {
+  background: rgba(167,242,162,0.1);
+  border-color: rgba(167,242,162,0.3);
+  color: #A7F2A2;
+}
+
+.md-hero-clickable {
+  cursor: pointer;
+}
+
+.md-hero-clickable:hover {
+  border-color: #A7F2A2;
+  background: rgba(167,242,162,0.2);
+}
+
+.md-hero-arrow {
+  font-size: 12px;
+  margin-left: 1px;
+  opacity: 0.6;
+}
+
+/* Hero Modal */
+.md-hero-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.md-hero-modal {
+  background: var(--block-bg);
+  border: 1px solid #13AD91;
+  clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+  padding: 24px;
+  min-width: 300px;
+  max-width: 400px;
+}
+
+.md-hero-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(19,200,176,0.2);
+  color: #A7F2A2;
+  font-size: 16px;
+}
+
+.md-hero-modal-close {
+  background: none;
+  border: none;
+  color: rgba(19,200,176,0.5);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.md-hero-modal-close:hover {
+  color: #fff;
+}
+
+.md-hero-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.md-hero-modal-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(19,200,176,0.05);
+  border: 1px solid rgba(19,200,176,0.1);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+
+.md-hero-modal-item-name {
+  color: #13AD91;
+  font-size: 13px;
+}
+
+.md-hero-modal-item-time {
+  color: rgba(19,200,176,0.5);
+  font-size: 11px;
 }
 
 /* Back link */

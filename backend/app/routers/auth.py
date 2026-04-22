@@ -3,8 +3,9 @@ from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import BaseModel
+import os
 
 from app.database import get_db
 from app.models.user import User
@@ -50,14 +51,14 @@ async def discord_callback(code: str, db: AsyncSession = Depends(get_db)):
     if user:
         user.username = username
         user.avatar_url = avatar_url
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now(timezone.utc)
     else:
         user = User(
             discord_id=discord_id,
             username=username,
             avatar_url=avatar_url,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
         )
         db.add(user)
 
@@ -80,7 +81,13 @@ class TokenRequest(BaseModel):
 @router.post("/token")
 async def generate_token(request: TokenRequest, db: AsyncSession = Depends(get_db)):
     """Генерация JWT токена по discord_id (только для тестирования)"""
-    
+    # TODO: Удалить этот эндпоинт перед выходом в продакшен!
+    if os.getenv("ALLOW_TEST_ENDPOINT", "false").lower() != "true":
+        raise HTTPException(
+            status_code=403,
+            detail="This endpoint is disabled in production. Set ALLOW_TEST_ENDPOINT=true to enable."
+        )
+
     # Используем асинхронный поиск, как и во всем твоем коде
     result = await db.execute(select(User).where(User.discord_id == request.discord_id))
     user = result.scalar_one_or_none()

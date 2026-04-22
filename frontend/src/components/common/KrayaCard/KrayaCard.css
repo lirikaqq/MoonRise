@@ -1,0 +1,120 @@
+/* ============================================
+   KrayaCard.css — clip-path + SVG overlay
+   ============================================
+   clip-path — форма со скосами
+   SVG — overlay обводка (верхний ряд, TopHeroes)
+   Полоски — ::before (одинарная) + ::after (двойная)
+   ============================================ */
+
+/* --- ROOT --- */
+.krayaCardRoot {
+  position: relative;
+  background-color: var(--block-bg);
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  -webkit-transform: translateZ(0);
+}
+
+/* ============================================
+   variant="info" — верхний ряд
+   Скос ВЕРХНИЙ-ЛЕВЫЙ 12px
+   Обводка SVG + одинарная полоска
+   ============================================ */
+.krayaCardRoot--info {
+  clip-path: polygon(
+    12px 0,
+    100% 0,
+    100% 100%,
+    0 100%,
+    0 12px
+  );
+}
+
+/* Полоска — одинарная, прижата к левому краю */
+.krayaCardRoot--info::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  background: var(--tournament-accent);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ============================================
+   variant="info-bottom" — нижний ряд
+   Скос ВЕРХНИЙ-ЛЕВЫЙ 14px + НИЖНИЙ-ПРАВЫЙ 14px
+   Двойная полоска, БЕЗ внешней обводки
+   ============================================ */
+.krayaCardRoot--info-bottom {
+  clip-path: polygon(
+    14px 0,
+    100% 0,
+    100% calc(100% - 14px),
+    calc(100% - 14px) 100%,
+    0 100%,
+    0 14px
+  );
+}
+
+/* Полоска 1 — тёмная (#13AD91) */
+.krayaCardRoot--info-bottom::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  background: var(--tournament-accent);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Полоска 2 — светлая (#A7F2A2), рядом */
+.krayaCardRoot--info-bottom::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  background: var(--tournament-accent-light);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ============================================
+   variant="topHeroes" — TopHeroes блок
+   Скос ВЕРХНИЙ-ЛЕВЫЙ 14px
+   ============================================ */
+.krayaCardRoot--topHeroes {
+  clip-path: polygon(
+    14px 0,
+    100% 0,
+    100% 100%,
+    0 100%,
+    0 14px
+  );
+}
+
+/* ============================================
+   SVG Overlay обводка
+   ============================================ */
+
+.krayaCardFrame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  user-select: none;
+  z-index: 3;
+  display: block;
+}

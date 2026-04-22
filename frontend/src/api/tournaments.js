@@ -4,11 +4,10 @@ import client from './client';
 export const tournamentsApi = {
   // ==================== ПУБЛИЧНЫЕ МЕТОДЫ ====================
   getAll: async (params = {}) => {
-    // Возвращаем как было
-    const res = await client.get('tournaments', { params }); 
+    const res = await client.get('tournaments/', { params });
     return res.data;
   },
-  
+
   getById: async (id) => {
     const res = await client.get(`tournaments/${id}`);
     return res.data;
@@ -25,8 +24,8 @@ export const tournamentsApi = {
       primary_role: data.primaryRole,
       secondary_role: data.secondaryRole,
       bio: data.bio || null,
-      confirmed_friend_request: data.confirmedFriendRequest, // ← добавили
-      confirmed_rules: data.confirmedRules                   // ← добавили
+      confirmed_friend_request: data.confirmedFriendRequest,
+      confirmed_rules: data.confirmedRules
     });
     return res.data;
   },
@@ -40,10 +39,11 @@ export const tournamentsApi = {
       battletag_id: data.battletagId || null,
       new_battletag: data.newBattletag || null,
       confirmed_friend_request: data.confirmedFriendRequest,
-      confirmed_rules: data.confirmedRules                   // ← добавили
+      confirmed_rules: data.confirmedRules
     });
     return res.data;
   },
+
   checkin: async (tournamentId) => {
     const res = await client.post(`tournaments/${tournamentId}/checkin`);
     return res.data;
@@ -73,14 +73,11 @@ export const tournamentsApi = {
   // ==================== АДМИНКА ЗАЯВОК ====================
   getApplications: async (tournamentId, statusFilter = null) => {
     const params = new URLSearchParams();
-    if (statusFilter) {
-      params.append('status_filter', statusFilter);
-    }
+    if (statusFilter) params.append('status_filter', statusFilter);
     const res = await client.get(`tournaments/${tournamentId}/applications?${params.toString()}`);
     return res.data;
   },
 
-  // НОВЫЙ МЕТОД ДЛЯ ПОЛУЧЕНИЯ ВСЕХ ЗАЯВОК ЮЗЕРА
   getMyAllApplications: async () => {
     const res = await client.get('/users/me/applications');
     return res.data;
@@ -100,12 +97,71 @@ export const tournamentsApi = {
     return res.data;
   },
 
+  // ==================== ДОБАВЛЕНИЕ УЧАСТНИКА ====================
+  addParticipant: async (tournamentId, data) => {
+    const res = await client.post(`tournaments/${tournamentId}/add-participant`, data);
+    return res.data;
+  },
+
+  // ==================== ПОИСК ПОЛЬЗОВАТЕЛЕЙ ====================
+  searchUsers: async (query) => {
+    const res = await client.get(`tournaments/users/search?q=${encodeURIComponent(query)}`);
+    return res.data;
+  },
+
+  // ==================== ПОИСК УЧАСТНИКОВ ТУРНИРА ====================
+  searchTournamentPlayers: async (tournamentId, query) => {
+    const res = await client.get(
+      `tournaments/${tournamentId}/participants?search=${encodeURIComponent(query)}`
+    );
+    return res.data;
+  },
+
+  // ==================== ЗАМЕНА ИГРОКА В КОМАНДЕ ====================
+  replacePlayer: async (tournamentId, teamId, oldParticipantId, newUserId) => {
+    const res = await client.post(
+      `tournaments/${tournamentId}/teams/${teamId}/replace/${oldParticipantId}`,
+      { new_user_id: newUserId }
+    );
+    return res.data;
+  },
+  
   // ==================== УЧАСТНИКИ ====================
   getParticipants: async (tournamentId) => {
     const res = await client.get(`tournaments/${tournamentId}/participants`);
     return res.data;
   },
+
+  // ==================== КОМАНДЫ ====================
+  getTeams: async (tournamentId) => {
+    const res = await client.get(`tournaments/${tournamentId}/teams`);
+    return res.data;
+  },
+
+  getFreePlayers: async (tournamentId) => {
+    const res = await client.get(`tournaments/${tournamentId}/free-players`);
+    return res.data;
+  },
+
+  createTeam: async (tournamentId, data) => {
+    const res = await client.post(`tournaments/${tournamentId}/teams`, data);
+    return res.data;
+  },
+
+  // ==================== КАПИТАНЫ ====================
+  promoteParticipant: async (participantId) => {
+    const res = await client.post(`tournaments/participants/${participantId}/promote`);
+    return res.data;
+  },
+
+  demoteParticipant: async (participantId) => {
+    const res = await client.post(`tournaments/participants/${participantId}/demote`);
+    return res.data;
+  },
 };
 
+// Старые именованные экспорты для совместимости
 export const getTournaments = () => tournamentsApi.getAll();
+export const getTournamentById = (id) => tournamentsApi.getById(id);
+
 export default tournamentsApi;

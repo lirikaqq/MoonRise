@@ -1,0 +1,9 @@
+/* ============================================================
+   PlayerProfilePage.css — Обёртка страницы профиля
+   ============================================================ */
+
+.player-profile-page {
+  min-height: 100vh;
+  background: transparent;
+  padding-top: 20px;
+}

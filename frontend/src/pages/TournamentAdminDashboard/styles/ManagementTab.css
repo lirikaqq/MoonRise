@@ -1,0 +1,165 @@
+/* frontend/src/pages/TournamentAdminDashboard/DashboardTabs/ManagementTab.css */
+
+.management-tab {
+max-width: 1100px;
+display: flex;
+flex-direction: column;
+gap: 24px;
+}
+
+/* ===================== СЕКЦИИ ===================== */
+
+.management-section {
+background-color: #18181b;
+border: 1px solid #27272a;
+border-radius: 12px;
+padding: 24px;
+}
+
+.management-section h3 {
+margin: 0 0 16px 0;
+color: #e4e4e7;
+font-size: 18px;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+/* Сообщения */
+.admin-message {
+padding: 14px 20px;
+border-radius: 10px;
+font-weight: 500;
+margin-bottom: 16px;
+}
+
+.admin-message--success {
+background-color: rgba(16, 185, 129, 0.15);
+color: #4ade80;
+border: 1px solid #4ade80;
+}
+
+.admin-message--error {
+background-color: rgba(239, 68, 68, 0.15);
+color: #f87171;
+border: 1px solid #f87171;
+}
+
+/* Текущий статус */
+.current-status {
+font-size: 16px;
+color: #a1a1aa;
+margin-bottom: 20px;
+}
+
+.current-status strong {
+color: #e4e4e7;
+text-transform: uppercase;
+}
+
+/* Кнопки */
+.btn-large {
+padding: 14px 28px;
+font-size: 16px;
+font-weight: 600;
+border-radius: 10px;
+}
+
+.btn-primary {
+background: linear-gradient(90deg, #a855f7, #22d3ee);
+color: white;
+border: none;
+transition: all 0.2s;
+}
+
+.btn-primary:hover {
+transform: translateY(-2px);
+box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3);
+}
+
+.btn-danger {
+background-color: #b91c1c;
+color: white;
+border: none;
+}
+
+.btn-danger:hover {
+background-color: #991b1b;
+}
+
+.btn-outline {
+background: transparent;
+border: 2px solid #4b5563;
+color: #e4e4e7;
+}
+
+.btn-danger-outline {
+background: transparent;
+border: 2px solid #b91c1c;
+color: #fda4af;
+}
+
+.btn-danger-outline:hover {
+background-color: rgba(185, 28, 28, 0.1);
+}
+
+/* Dev Section */
+.dev-section {
+border-color: #4b5563;
+}
+
+.dev-buttons {
+display: flex;
+flex-wrap: wrap;
+gap: 12px;
+}
+
+.dev-buttons .btn {
+padding: 12px 20px;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+/* Danger Zone */
+.danger-zone {
+border-color: #7f1d1d;
+background-color: rgba(127, 29, 29, 0.08);
+}
+
+.danger-zone h3 {
+color: #fda4af;
+}
+
+.danger-zone h3 svg {
+color: #f87171;
+}
+
+/* Draft Info */
+.draft-info {
+padding: 16px;
+background-color: #27272a;
+border-radius: 10px;
+border: 1px solid #3f3f46;
+}
+
+.draft-info p {
+margin-bottom: 16px;
+color: #d1d5db;
+}
+
+/* ===================== АДАПТИВ ===================== */
+
+@media (max-width: 768px) {
+.management-section {
+padding: 20px;
+}
+
+.dev-buttons {
+flex-direction: column;
+}
+
+.btn-large {
+width: 100%;
+}
+}

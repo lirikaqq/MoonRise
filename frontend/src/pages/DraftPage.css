@@ -1,53 +1,108 @@
 /* frontend/src/pages/DraftPage.css */
 
+/* === BASE TYPOGRAPHY — NO !important === */
+.draft-page {
+    font-family: 'Ponter', 'Montserrat', 'Segoe UI', sans-serif;
+    color: #e0e0e0;
+    line-height: 1.5;
+}
+
+.draft-page h1,
+.draft-page h2,
+.draft-page h3,
+.draft-page h4 {
+    font-family: 'Ponter', sans-serif;
+    margin: 0;
+}
+
+.draft-page button,
+.draft-page input,
+.draft-page select {
+    font-family: inherit;
+}
+
+/* === PAGE LAYOUT === */
 .draft-page {
     max-width: 1600px;
     margin: 0 auto;
-    padding: 1rem;
-    height: calc(100vh - 1rem); /* Высота экрана минус паддинги */
+    padding: 1.5rem;
+    min-height: calc(100vh - 4rem);
     display: flex;
     flex-direction: column;
 }
 
 .draft-main-area {
     display: grid;
-    grid-template-columns: 2fr 1fr; /* Левая колонка в 2 раза больше правой */
-    gap: 1rem;
-    flex-grow: 1; /* Занимает все оставшееся место */
-    min-height: 0; /* Важно для правильной работы overflow */
+    grid-template-columns: 1fr 420px;
+    gap: 1.5rem;
+    flex-grow: 1;
+    align-items: start;
 }
 
-/* Стили для дочерних компонентов */
+/* === SCROLLABLE PANELS === */
 .draft-pool-container {
-    height: 100%;
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    max-height: calc(100vh - 12rem);
+    overflow: hidden;
+}
+
+.draft-pool-container .player-pool-header {
+    flex-shrink: 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(19, 173, 145, 0.2);
+}
+
+.draft-pool-container .player-pool-grid {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 0.5rem;
+}
+
+/* Кастомный скроллбар */
+.draft-pool-container .player-pool-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.draft-pool-container .player-pool-grid::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.draft-pool-container .player-pool-grid::-webkit-scrollbar-thumb {
+    background: #13AD91;
+    border-radius: 3px;
+}
+
+.draft-pool-container .player-pool-grid::-webkit-scrollbar-thumb:hover {
+    background: #0f9178;
 }
 
 .draft-teams-container {
-    height: 100%;
-    overflow-y: auto; /* Позволяет прокручивать команды, если они не влезают */
+    height: fit-content;
+    max-height: calc(100vh - 12rem);
+    overflow-y: auto;
+    min-width: 0;
+    position: sticky;
+    top: 1.5rem;
 }
 
-/* Стили для заглушек (потом заменим на реальные) */
+/* === PLACEHOLDER CARDS === */
 .draft-component-placeholder {
     background-color: var(--block-bg, #111B25);
-    border: 1px solid var(--border, #13c8b0);
+    border: 1px solid var(--border, #13AD91);
     border-radius: 8px;
-    padding: 1rem;
+    padding: 1.25rem;
     color: var(--text-soft);
 }
 
-.draft-teams-container .draft-component-placeholder {
-     /* Чтобы показать, как работает скролл */
-    min-height: 120vh;
-}
-
-/* --- Стили для Пула Игроков --- */
+/* === PLAYER POOL HEADER === */
 .player-pool-header {
-    margin-bottom: 1rem;
     display: flex;
-    flex-wrap: wrap; /* Для мобилок */
+    flex-wrap: wrap;
     gap: 1rem;
     align-items: center;
 }
@@ -55,156 +110,217 @@
 .player-pool-filters {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .player-pool-filters button {
     background-color: rgba(0, 0, 0, 0.3);
     border: 1px solid #3a5160;
-    color: var(--text-soft);
-    padding: 0.5rem 1rem;
+    color: #A7F2A2;
+    padding: 0.4rem 0.9rem;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .player-pool-filters button:hover {
     background-color: #3a5160;
+    border-color: #13AD91;
 }
 
 .player-pool-filters button.active {
-    background-color: var(--accent);
-    border-color: var(--accent);
-    color: var(--bg);
+    background-color: #13AD91;
+    border-color: #13AD91;
+    color: #111B25;
 }
 
 .player-pool-search {
-    flex-grow: 1; /* Занимает оставшееся место */
+    flex-grow: 1;
     min-width: 200px;
 }
 
-.player-pool-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1rem;
-    overflow-y: auto;
-    padding-right: 0.5rem; /* Чтобы скроллбар не прилипал */
+.player-pool-search input {
+    width: 100%;
+    background: #111B25;
+    border: 1px solid #13AD91;
+    padding: 0.6rem 1rem;
+    color: #e0e0e0;
+    font-size: 14px;
+    border-radius: 4px;
+    box-sizing: border-box;
 }
 
-/* Стили для карточки игрока */
-.player-card {
-    background-color: rgba(0, 0, 0, 0.2);
-    border: 1px solid #3a5160;
+.player-pool-search input::placeholder {
+    color: #A7F2A2;
+}
+
+.player-pool-search input:focus {
+    outline: none;
+    border-color: #A7F2A2;
+    box-shadow: 0 0 0 2px rgba(167, 242, 162, 0.2);
+}
+
+/* === PLAYER POOL GRID === */
+.player-pool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+    padding-top: 1rem;
+}
+
+/* === PLAYER CARD === */
+.draft-pool-container .player-card {
+    background: linear-gradient(135deg, rgba(17, 27, 37, 0.9), rgba(35, 66, 63, 0.4));
+    border: 1px solid rgba(19, 173, 145, 0.3);
     border-radius: 8px;
     padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    font-family: 'Montserrat', sans-serif;
+    min-height: 130px;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.draft-pool-container .player-card:hover {
+    border-color: #13AD91;
+    box-shadow: 0 4px 12px rgba(19, 173, 145, 0.15);
+    transform: translateY(-2px);
 }
 
 .player-card-header {
     text-align: center;
+    min-width: 0;
 }
 
 .player-card-name {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    color: var(--text-soft);
+    color: #e0e0e0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    margin-bottom: 0.25rem;
 }
 
 .player-card-rating {
-    font-size: 0.9rem;
-    color: var(--accent);
+    font-size: 0.85rem;
+    color: #13AD91;
     font-weight: 700;
 }
 
 .player-card-roles {
     display: flex;
     justify-content: center;
-    gap: 0.5rem;
-    font-size: 0.75rem;
+    gap: 0.4rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #A7F2A2;
+}
+
+.player-card-roles span {
+    background: rgba(19, 173, 145, 0.1);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid rgba(19, 173, 145, 0.3);
 }
 
 .player-card-button {
-    margin-top: 0.5rem;
+    margin-top: auto;
     width: 100%;
-    background-color: var(--accent);
-    color: var(--bg);
+    background-color: #13AD91;
+    color: #111B25;
     border: none;
-    padding: 0.75rem;
+    padding: 0.6rem;
     border-radius: 4px;
     font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
 }
 
-.player-card-button:hover {
-    background-color: var(--accent-dark);
+.player-card-button:hover:not(:disabled) {
+    background-color: #0f9178;
+    transform: translateY(-1px);
 }
 
 .player-card-button:disabled {
-    background-color: #3a5160;
-    color: #777;
+    background-color: #23423F;
+    color: #6b7280;
     cursor: not-allowed;
 }
 
-/* --- Стили для Таймера и Статус-бара --- */
+/* === TIMER & STATUS BAR === */
 .draft-top-bar {
-    background-color: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--border);
+    background: linear-gradient(135deg, rgba(17, 27, 37, 0.9), rgba(35, 66, 63, 0.5));
+    border: 1px solid #13AD91;
     border-radius: 8px;
-    padding: 1rem 2rem;
+    padding: 1rem 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-family: 'Montserrat', sans-serif;
+    gap: 1.5rem;
 }
 
 .draft-status-info {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.3rem;
+    min-width: 0;
+    flex: 1;
 }
 
 .draft-turn-label {
-    font-size: 0.9rem;
-    color: var(--text-soft);
+    font-size: 0.8rem;
+    color: #A7F2A2;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
 .draft-current-team {
-    font-family: 'Palui', sans-serif;
-    font-size: 2rem;
-    color: var(--accent-light);
-    line-height: 1;
+    font-size: 1.75rem;
+    color: #A7F2A2;
+    line-height: 1.1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .draft-current-captain {
-    font-size: 1rem;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .draft-timer-container {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 .draft-timer-value {
-    font-family: 'Digits', monospace; /* Если у тебя есть шрифт для цифр */
-    font-size: 3.5rem;
+    font-family: 'Digits', 'Courier New', monospace;
+    font-size: 3rem;
     font-weight: bold;
-    color: var(--accent);
+    color: #13AD91;
     line-height: 1;
-    text-shadow: 0 0 10px rgba(19, 200, 176, 0.5);
+    text-shadow: 0 0 10px rgba(19, 173, 145, 0.5);
     transition: color 0.3s ease;
 }
 
-/* Класс для таймера, когда остается мало времени (меньше 15 сек) */
 .draft-timer-warning {
     color: #ff4d4d;
     text-shadow: 0 0 15px rgba(255, 77, 77, 0.6);
@@ -218,13 +334,182 @@
 }
 
 .draft-my-turn-badge {
-    background-color: var(--accent);
-    color: var(--bg);
+    background-color: #13AD91;
+    color: #111B25;
     padding: 0.25rem 0.75rem;
     border-radius: 4px;
     font-weight: bold;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    margin-top: 0.5rem;
+    letter-spacing: 0.5px;
     animation: pulse 2s infinite;
+}
+
+/* === TEAMS PANEL === */
+.draft-teams-container h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #13AD91;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(19, 173, 145, 0.3);
+}
+
+.team-card {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(19, 173, 145, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.team-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-header-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.team-name {
+    color: #A7F2A2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.captain-name {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.player-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.player-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.player-row:hover {
+    background: rgba(19, 173, 145, 0.1);
+}
+
+.player-role-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #13AD91;
+    border: 1px solid #13AD91;
+    border-radius: 3px;
+    padding: 2px 6px;
+    min-width: 40px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.player-name {
+    font-size: 0.85rem;
+    color: #e0e0e0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
+}
+
+/* === RESPONSIVE BREAKPOINTS === */
+@media (max-width: 1200px) {
+    .draft-main-area {
+        grid-template-columns: 1fr 360px;
+        gap: 1rem;
+    }
+
+    .player-pool-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+}
+
+@media (max-width: 1024px) {
+    .draft-main-area {
+        grid-template-columns: 1fr;
+    }
+
+    .draft-teams-container {
+        position: static;
+        max-height: none;
+        order: -1;
+    }
+
+    .draft-pool-container {
+        max-height: 60vh;
+    }
+}
+
+@media (max-width: 768px) {
+    .draft-page {
+        padding: 1rem;
+    }
+
+    .draft-top-bar {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .draft-timer-container {
+        align-items: center;
+    }
+
+    .player-pool-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .player-pool-filters {
+        justify-content: center;
+    }
+
+    .player-pool-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .draft-page {
+        padding: 0.75rem;
+    }
+
+    .draft-component-placeholder {
+        padding: 0.75rem;
+    }
+
+    .draft-timer-value {
+        font-size: 2.5rem;
+    }
+
+    .draft-current-team {
+        font-size: 1.5rem;
+    }
 }

@@ -1,0 +1,231 @@
+/* ============================================
+   PlayerCard.css
+   ============================================ */
+
+.player-card {
+  width: 450px;
+  height: 255px;
+  background: var(--block-bg);
+  box-sizing: border-box;
+  position: relative;
+  clip-path: polygon(
+    30px 0%,
+    100% 0%,
+    100% 100%,
+    0% 100%,
+    0% 30px
+  );
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Левая вертикальная полоса 4px */
+.player-card-stripe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--tournament-accent);
+  z-index: 1;
+}
+
+/* Диагональная линия скоса — верхний левый срез (30px) */
+.corner-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 43px;
+  height: 1px;
+  background: var(--tournament-accent);
+  transform: rotate(135deg);
+  transform-origin: 30px 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ===== Верхняя часть: аватар + инфо ===== */
+.player-card-top {
+  display: flex;
+  flex-direction: row;
+  padding: 25px 20px 0 20px;
+  align-items: flex-start;
+}
+
+.player-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+  border: 1px solid var(--tournament-accent-light);
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.player-avatar-placeholder {
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+  border: 1px solid var(--tournament-accent-light);
+  background-color: var(--button-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Arial Black', Arial, sans-serif;
+  font-size: 36px;
+  color: var(--tournament-accent-light);
+  flex-shrink: 0;
+}
+
+.player-info {
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.player-name {
+  font-family: 'Arial Black', Arial, sans-serif;
+  font-size: 30px;
+  color: var(--tournament-accent-light);
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.battletag-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.battletag-box {
+  width: 130px;
+  height: 25px;
+  border: 1px solid var(--tournament-accent);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.battletag-text {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: var(--tournament-accent);
+}
+
+.battletag-badge {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background-color: var(--tournament-accent);
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  color: var(--block-bg);
+  flex-shrink: 0;
+}
+
+.twitch-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.twitch-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.twitch-login {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: var(--tournament-accent-light);
+  margin-left: 10px;
+}
+
+/* Кликабельный "+" для BattleTag (когда нет и isOwner) */
+.battletag-plus {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: var(--tournament-accent);
+  cursor: pointer;
+  user-select: none;
+}
+
+.battletag-plus:hover {
+  opacity: 0.8;
+}
+
+/* Кликабельный "+" для Twitch (когда нет и isOwner) */
+.twitch-plus {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: var(--tournament-accent-light);
+  cursor: pointer;
+  user-select: none;
+  margin-left: 10px;
+}
+
+.twitch-plus:hover {
+  opacity: 0.8;
+}
+
+/* Плейсхолдер, который сохраняет высоту но невидим */
+.contact-placeholder-hidden {
+  visibility: hidden;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ===== Горизонтальный разделитель ===== */
+.player-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--tournament-accent-light);
+  margin-top: 15px;
+  flex-shrink: 0;
+}
+
+/* ===== Статистика (3 колонки) ===== */
+.player-stats {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 10px 0 18px 40px;
+}
+
+.stat-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.stat-block:nth-child(1) { margin-left: 0; }
+.stat-block:nth-child(2) { margin-left: 73px; }
+.stat-block:nth-child(3) { margin-left: 91px; }
+
+.stat-block-value {
+  font-family: 'Ponter', sans-serif;
+  font-size: 30px;
+  color: var(--tournament-accent-light);
+  line-height: 1;
+}
+
+.stat-block-label {
+  font-family: 'Ponter', sans-serif;
+  font-size: 15px;
+  color: var(--tournament-accent-light);
+  margin-top: 15px;
+  white-space: nowrap;
+}

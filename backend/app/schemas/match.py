@@ -16,6 +16,42 @@ class TeamResponse(BaseModel):
     captain_user_id: Optional[int] = None
     created_at: datetime
 
+    # Вложенные данные: участники турнира, привязанные к команде
+    participants: List['TeamParticipantBrief'] = []
+    captain: Optional['UserBrief'] = None
+
+    class Config:
+        from_attributes = True
+
+
+class TeamBriefResponse(BaseModel):
+    """Упрощённая схема команды для использования в EncounterResponse.
+    Не загружает captain/participants — избегает MissingGreenlet ошибок."""
+    id: int
+    name: str
+    tournament_id: int
+    captain_user_id: Optional[int] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class TeamParticipantBrief(BaseModel):
+    id: int
+    user_id: int
+    status: str
+    is_captain: bool = False
+
+    class Config:
+        from_attributes = True
+
+
+class UserBrief(BaseModel):
+    id: int
+    username: str
+    display_name: Optional[str] = None
+
     class Config:
         from_attributes = True
 
@@ -39,8 +75,8 @@ class EncounterResponse(BaseModel):
     stage: Optional[str] = None
     round_number: Optional[int] = None
     created_at: datetime
-    team1: Optional[TeamResponse] = None
-    team2: Optional[TeamResponse] = None
+    team1: Optional['TeamBriefResponse'] = None
+    team2: Optional['TeamBriefResponse'] = None
     matches: Optional[List['MatchShortResponse']] = []
 
     class Config:
@@ -123,6 +159,11 @@ class MatchPlayerResponse(BaseModel):
     ultimates_earned: int = 0
     ultimates_used: int = 0
     time_played: float = 0
+    # Новые поля
+    contribution_score: float = 0
+    is_mvp: bool = False
+    is_svp: bool = False
+    last_hero: Optional[str] = None
     heroes: List[MatchPlayerHeroResponse] = []
 
     class Config:
@@ -160,6 +201,39 @@ class UploadLogRequest(BaseModel):
     player_mappings: Optional[List[PlayerMappingItem]] = []
 
 
+class KillFeedAssistItem(BaseModel):
+    player_name: str
+    team_label: str
+    hero_name: str
+
+    class Config:
+        from_attributes = True
+
+
+class KillFeedItem(BaseModel):
+    id: int
+    killer_name: str
+    killer_team_label: str
+    killer_hero: Optional[str] = None
+    killer_user_id: Optional[int] = None
+    victim_name: str
+    victim_team_label: str
+    victim_hero: Optional[str] = None
+    victim_user_id: Optional[int] = None
+    weapon: Optional[str] = None
+    damage: float = 0
+    is_critical: bool = False
+    is_headshot: bool = False
+    is_first_blood: bool = False
+    timestamp: float
+    round_number: int = 0
+    offensive_assists: List[KillFeedAssistItem] = []
+    defensive_assists: List[KillFeedAssistItem] = []
+
+    class Config:
+        from_attributes = True
+
+
 class PlayerMatchHistoryItem(BaseModel):
     match_id: int
     encounter_id: int
@@ -179,6 +253,23 @@ class PlayerMatchHistoryItem(BaseModel):
     damage_blocked: float = 0
     objective_kills: int = 0
     heroes: List[str] = []
+
+    class Config:
+        from_attributes = True
+
+
+class FirstBloodItem(BaseModel):
+    round_number: int
+    killer_name: str
+    killer_team_label: str
+    killer_hero: Optional[str] = None
+    killer_user_id: Optional[int] = None
+    victim_name: str
+    victim_team_label: str
+    victim_hero: Optional[str] = None
+    victim_user_id: Optional[int] = None
+    weapon: Optional[str] = None
+    timestamp: float
 
     class Config:
         from_attributes = True

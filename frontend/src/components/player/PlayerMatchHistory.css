@@ -14,6 +14,28 @@
   letter-spacing: 0.05em;
 }
 
+.history-title {
+  font-family: "Ponter", sans-serif;
+  font-size: 1.2rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.history-loading,
+.history-error,
+.history-empty {
+  padding: 24px;
+  text-align: center;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  color: rgba(19, 200, 176, 0.4);
+}
+
+.history-error {
+  color: #ff5050;
+}
+
 .history-table {
   width: 100%;
   border-collapse: collapse;
@@ -96,4 +118,61 @@
   font-size: 0.6rem;
   overflow: hidden;
   white-space: nowrap;
+}
+
+/* Кнопка Kill Feed */
+.history-show-kf {
+  padding: 4px 12px;
+  font-family: "Ponter", sans-serif;
+  font-size: 11px;
+  color: var(--tournament-accent-light);
+  background: rgba(19, 173, 145, 0.15);
+  border: 1px solid var(--tournament-accent);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+
+.history-show-kf:hover {
+  background: var(--tournament-accent);
+  color: var(--bg);
+}
+
+/* Ссылка "Детали" */
+.history-match-link {
+  display: inline-block;
+  margin-left: 8px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  color: var(--tournament-accent-light);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.history-match-link:hover {
+  color: #A7F2A2;
+  text-decoration: underline;
+}
+
+/* Выбранная строка */
+.history-row--selected {
+  background-color: rgba(19, 173, 145, 0.08) !important;
+}
+
+/* Обёртка Kill Feed */
+.history-killfeed-wrap {
+  margin-top: 16px;
+  animation: kf-wrap-in 0.3s ease-out;
+}
+
+@keyframes kf-wrap-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

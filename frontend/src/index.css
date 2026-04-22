@@ -16,7 +16,9 @@
 @font-face {
   font-family: "Digits";
   src: url("/assets/fonts/ST-SimpleSquare.otf") format("opentype");
+  font-weight: normal;
 }
+
 @font-face {
   font-family: 'Montserrat';
   src: url('/assets/fonts/Montserrat-Medium.ttf') format('truetype');
@@ -37,7 +39,7 @@
   --panel: rgba(16, 39, 47, 0.84);
   --accent: #13c8b0;
   --accent-dark: #13ad91;
-  --accent-light: #b7ffb2;
+  --accent-light: #A7F2A2;
   --border: rgba(19, 200, 176, 0.8);
   --text-soft: rgba(183, 255, 178, 0.92);
 
@@ -53,17 +55,50 @@
 }
 
 /* --- БАЗОВЫЕ СТИЛИ ДЛЯ ВСЕГО САЙТА --- */
-* { 
-  box-sizing: border-box; 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-y: scroll;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--header-bg);
+}
+
+html {
+  background: #1D353E;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Один скроллбар для всего */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--header-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-dark);
+  border-radius: 3px;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--bg);
   color: var(--text-soft);
   font-family: 'Ponter', sans-serif;
-  overflow-x: hidden;
+  background: linear-gradient(180deg, #1D353E 0%, #111B25 100%);
+  background-attachment: fixed;
 }
 
 a { 

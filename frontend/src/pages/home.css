@@ -49,28 +49,6 @@
 
 html { scroll-behavior: smooth; }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: var(--accent) var(--header-bg);
-}
-
-/* Один скроллбар для всего */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--header-bg);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--accent-dark);
-  border-radius: 3px;
-}
-
 body {
   margin: 0;
   background: var(--bg);
@@ -149,25 +127,66 @@ img {
   gap: 25px;
 }
 
-.home-social {
+/* ========================================
+   REUSABLE: Corner Icon Links (2 уголка)
+   Используется в Header и Footer
+   ======================================== */
+.corner-icon-link {
+  position: relative;
   width: 50px;
   height: 50px;
-  border: 1px solid var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(8, 27, 35, 0.35);
-  transition: 0.2s ease;
+  text-decoration: none;
+  border: none;
+  transition: background 0.3s ease;
 }
 
-.home-social:hover {
+/* 2 уголка: правый-верхний и левый-нижний */
+.corner-icon-link::before,
+.corner-icon-link::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 16px;
+  border: 2px solid var(--accent, #13AD91);
+  transition: all 0.3s ease;
+}
+
+/* Правый-верхний уголок */
+.corner-icon-link::before {
+  top: 0;
+  right: 0;
+  border-bottom: none;
+  border-left: none;
+}
+
+/* Левый-нижний уголок */
+.corner-icon-link::after {
+  bottom: 0;
+  left: 0;
+  border-top: none;
+  border-right: none;
+}
+
+/* Hover: уголки смыкаются в полную рамку */
+.corner-icon-link:hover {
   background: rgba(19, 200, 176, 0.08);
-  border-color: var(--accent-light);
 }
 
-.home-social img {
+.corner-icon-link:hover::before,
+.corner-icon-link:hover::after {
+  width: 100%;
+  height: 100%;
+}
+
+.corner-icon-link img {
   width: 22px;
   height: 22px;
+  position: relative;
+  z-index: 1;
 }
 
 .home-login {
@@ -732,26 +751,7 @@ img {
   gap: 25px;
 }
 
-.home-footer-social {
-  width: 50px;
-  height: 50px;
-  border: 1px solid var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(8, 27, 35, 0.35);
-  transition: 0.2s ease;
-}
-
-.home-footer-social:hover {
-  background: rgba(19, 200, 176, 0.08);
-  border-color: var(--accent-light);
-}
-
-.home-footer-social img {
-  width: 22px;
-  height: 22px;
-}
+/* Устарело: иконки футера используют .corner-icon-link */
 
 .home-footer-logo {
   display: flex;
@@ -781,29 +781,65 @@ img {
   letter-spacing: 0.02em;
 }
 
-/* MY PROFILE кнопка */
+/* MY PROFILE кнопка — открытая рамка */
 .home-profile-btn {
+  position: relative;
   height: 50px;
-  padding: 0 16px;
-  border: 1px solid var(--accent);
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(8, 27, 35, 0.35);
+  background: transparent;
   font-family: "Palui", sans-serif;
   font-size: 16px;
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.03em;
   text-decoration: none;
-  transition: 0.2s ease;
   white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  transition: color 0.3s ease;
 }
 
+/* Открытая рамка: правый-верхний + левый-нижний */
+.home-profile-btn::before,
+.home-profile-btn::after {
+  content: '';
+  position: absolute;
+  border: 2px solid var(--accent, #13AD91);
+  transition: all 0.3s ease;
+}
+
+/* Правый-верхний угол: длинная горизонталь, короткая вертикаль */
+.home-profile-btn::before {
+  top: 0;
+  right: 0;
+  width: 85%;
+  height: 55%;
+  border-bottom: none;
+  border-left: none;
+}
+
+/* Левый-нижний угол: длинная горизонталь, короткая вертикаль */
+.home-profile-btn::after {
+  bottom: 0;
+  left: 0;
+  width: 85%;
+  height: 55%;
+  border-top: none;
+  border-right: none;
+}
+
+/* Hover: рамка замыкается */
 .home-profile-btn:hover {
-  background: rgba(19, 200, 176, 0.08);
-  border-color: var(--accent-light);
   color: var(--accent-light);
+}
+
+.home-profile-btn:hover::before,
+.home-profile-btn:hover::after {
+  width: 100%;
+  height: 100%;
 }
 
 /* ANIMATIONS */

@@ -4,6 +4,7 @@ __pycache__/
 .venv/
 venv/
 env/
+backend/venv/
 
 # Node
 node_modules/
@@ -32,10 +33,10 @@ redis_data/
 .DS_Store
 
 # ==========================================
-# MOONRISE SPECIFIC (Логи, Дата, Скрипты)
+# MOONRISE SPECIFIC
 # ==========================================
 
-# Логи Overwatch из Workshop
+# Логи
 backend/logs/*.txt
 *.log
 
@@ -43,12 +44,48 @@ backend/logs/*.txt
 backend/tournament_config.json
 backend/register.json
 backend/match.txt
+backend/google_credentials.json
+backend/google_credetials.json
 
-# Одноразовые/локальные админские скрипты
+# AI Tools
+.continue/
+
+# Одноразовые/локальные админские скрипты (не коммитим)
 backend/clead_db.py
 backend/clear_db.py
 backend/make_admin.py
-
-# (Опционально) Раскомментируй строки ниже, если НЕ хочешь пушить эти скрипты в Git:
 backend/bulk_import.py
 backend/seed_tournaments.py
+backend/update_team_config.py
+
+# Скрипты, которые лежат в корне и в backend/scripts/ (дубли)
+cleanup_tournament_6.py
+import_teams_from_balancer.py
+repair_participants.py
+show_teams.py
+check_participants.py
+check_teams.py
+reimport_participants.py
+import_tournament_participants.py
+cleanup_all_users.py
+create_test_team.py
+delete_test_team.py
+
+# Данные
+teams_5v5.csv
+import_data.tsv
+
+# ==========================================
+# Alembic & Migrations
+# ==========================================
+backend/alembic/versions/__pycache__/
+
+# Temporary / Backup files
+*.bak
+*.tmp
+*~
+
+
+
+backend/google_credentials.json
+backend/google_credetials.json

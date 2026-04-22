@@ -12,6 +12,7 @@ sys.path.insert(0, '/app')
 # Импортируем все модели чтобы autogenerate их видел
 from app.database import Base
 from app.models.user import User, BattleTag
+from app.models.user_division_history import UserDivisionHistory
 from app.models.tournament import Tournament, TournamentParticipant
 
 # Попытаться импортировать остальные модели если они есть

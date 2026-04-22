@@ -1,7 +1,36 @@
 import hashlib
 import re
+import logging
 from typing import Optional
 from dataclasses import dataclass, field
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class AssistInfo:
+    player_name: str
+    team_label: str
+    hero_name: str
+    assist_type: str  # 'offensive' or 'defensive'
+
+
+@dataclass
+class KillEvent:
+    timestamp: float
+    round_number: int
+    killer_name: str
+    killer_team_label: str
+    killer_hero: str
+    victim_name: str
+    victim_team_label: str
+    victim_hero: str
+    weapon: str
+    damage: float
+    is_critical: bool
+    is_headshot: bool
+    offensive_assists: list = field(default_factory=list)  # list of AssistInfo
+    defensive_assists: list = field(default_factory=list)
 
 
 @dataclass
@@ -78,6 +107,8 @@ class ParsedMatch:
     file_hash: str
     file_name: str
     round_stats: list = field(default_factory=list)
+    kills: list = field(default_factory=list)  # list of KillEvent
+    parse_warnings: list[str] = field(default_factory=list)
 
 
 def calculate_file_hash(content: bytes) -> str:
@@ -184,6 +215,12 @@ def parse_log(content: bytes, file_name: str) -> ParsedMatch:
     last_round = 0
     rounds_data: dict[int, dict[tuple, dict[str, HeroStat]]] = {}
 
+    # Kill feed tracking
+    kills: list[KillEvent] = []
+    pending_assists: list = []  # assists not yet matched to kills
+    current_round = 0
+    bad_lines = 0
+
     def safe_float(data, idx):
         try:
             val = data[idx].strip()
@@ -230,6 +267,80 @@ def parse_log(content: bytes, file_name: str) -> ParsedMatch:
                 last_round = max(last_round, round_num)
             except (ValueError, IndexError):
                 pass
+
+        elif event_type == 'round_start' and len(parts) >= 4:
+            try:
+                current_round = int(parts[3])
+            except (ValueError, IndexError):
+                pass
+
+        elif event_type == 'kill' and len(parts) >= 13:
+            try:
+                kill_time = float(parts[2])
+                killer_team = parts[3].strip()
+                killer_name = parts[4].strip()
+                killer_hero = parts[5].strip()
+                victim_team = parts[6].strip()
+                victim_name = parts[7].strip()
+                victim_hero = parts[8].strip()
+                weapon = parts[9].strip()
+                damage = float(parts[10]) if parts[10] else 0.0
+                is_crit = parts[11].strip() == 'True'
+                is_hs = parts[12].strip() == 'True'
+
+                kill = KillEvent(
+                    timestamp=kill_time,
+                    round_number=current_round,
+                    killer_name=killer_name,
+                    killer_team_label=killer_team,
+                    killer_hero=killer_hero,
+                    victim_name=victim_name,
+                    victim_team_label=victim_team,
+                    victim_hero=victim_hero,
+                    weapon=weapon,
+                    damage=damage,
+                    is_critical=is_crit,
+                    is_headshot=is_hs,
+                )
+
+                # Match pending assists (within 1 second window)
+                for a in pending_assists[:]:
+                    if abs(a['timestamp'] - kill_time) <= 1.0:
+                        assist_info = AssistInfo(
+                            player_name=a['player_name'],
+                            team_label=a['team_label'],
+                            hero_name=a['hero_name'],
+                            assist_type=a['assist_type'],
+                        )
+                        if a['assist_type'] == 'offensive':
+                            kill.offensive_assists.append(assist_info)
+                        else:
+                            kill.defensive_assists.append(assist_info)
+                        pending_assists.remove(a)
+
+                kills.append(kill)
+            except Exception as e:
+                bad_lines += 1
+                logger.warning(f"Skipped malformed line [kill]: {e} | line: {raw_line[:120]}")
+                continue
+
+        elif event_type in ('defensive_assist', 'offensive_assist') and len(parts) >= 6:
+            try:
+                assist_time = float(parts[2])
+                assist_team = parts[3].strip()
+                assist_player = parts[4].strip()
+                assist_hero = parts[5].strip()
+                pending_assists.append({
+                    'timestamp': assist_time,
+                    'player_name': assist_player,
+                    'team_label': assist_team,
+                    'hero_name': assist_hero,
+                    'assist_type': 'offensive' if event_type == 'offensive_assist' else 'defensive',
+                })
+            except Exception as e:
+                bad_lines += 1
+                logger.warning(f"Skipped malformed line [{event_type}]: {e} | line: {raw_line[:120]}")
+                continue
 
         elif event_type == 'player_stat' and len(parts) >= 40:
             try:
@@ -285,7 +396,9 @@ def parse_log(content: bytes, file_name: str) -> ParsedMatch:
                 existing = rounds_data[round_num][key].get(hero_name)
                 if existing is None or hero.time_played > existing.time_played:
                     rounds_data[round_num][key][hero_name] = hero
-            except Exception:
+            except Exception as e:
+                bad_lines += 1
+                logger.warning(f"Skipped malformed line [player_stat]: {e} | line: {raw_line[:120]}")
                 continue
 
     final_round = last_round if last_round > 0 else (max(rounds_data.keys()) if rounds_data else 0)
@@ -319,10 +432,15 @@ def parse_log(content: bytes, file_name: str) -> ParsedMatch:
 
     round_stats = _compute_round_stats(rounds_data)
 
+    parse_warnings = []
+    if bad_lines > 0:
+        parse_warnings.append(f"Skipped {bad_lines} malformed line(s) during parsing")
+
     return ParsedMatch(
         map_name=map_name, game_mode=game_mode,
         team1_label=team1_label, team2_label=team2_label,
         winner_label=winner_label, duration_seconds=duration_seconds,
         players=players, file_hash=file_hash, file_name=file_name,
-        round_stats=round_stats,
+        round_stats=round_stats, kills=kills,
+        parse_warnings=parse_warnings,
     )

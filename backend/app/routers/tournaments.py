@@ -1,25 +1,23 @@
-# backend/app/routers/tournaments.py
-
+import logging
 import json
-from fastapi import APIRouter, Depends, HTTPException, status, Request
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from sqlalchemy.exc import IntegrityError
-from typing import List, Optional
 from datetime import datetime, timezone
+from typing import List, Optional
 
-# Models
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from sqlalchemy import select, func, exists, or_
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
+
 from app.database import get_db
 from app.models.tournament import Tournament, TournamentParticipant
+from app.models.match import Team, Encounter
 from app.models.user import User, BattleTag
 
-# Core
-from app.core.security import decode_access_token
-
-# Constants
+from app.core.security import decode_access_token, get_current_admin
+from app.core.html_sanitizer import sanitize_html
 from app.constants import VALID_TOURNAMENT_STATUSES
 
-# Schemas
 from app.schemas.tournament import (
     TournamentCreate,
     TournamentUpdate,
@@ -30,10 +28,21 @@ from app.schemas.tournament import (
     ApplicationResponse,
     ApplicationApprove,
     ApplicationReject,
+    BracketResponse,
+    AddParticipantRequest,
+    ReplacePlayerRequest,
+    ReplacementResponse,
+    TeamWithHistoryResponse,
 )
 
-from app.schemas.tournament import BracketResponse
-from app.services.tournament_service import TournamentService 
+from app.services.tournament_service import (
+    TournamentService, 
+    TeamConfigImmutableError
+)
+
+
+logger = logging.getLogger(__name__)   
+
 
 router = APIRouter(tags=["tournaments"])
 
@@ -134,11 +143,28 @@ async def get_tournaments(
     """Получить список всех турниров."""
     result = await db.execute(
         select(Tournament)
+        .options(selectinload(Tournament.draft_session))   # ← Добавили это
         .offset(skip)
         .limit(limit)
         .order_by(Tournament.start_date.desc())
     )
     return result.scalars().all()
+
+# ============================
+# PRIVATE HELPERS
+# ============================
+
+async def _get_tournament_or_404(tournament_id: int, db: AsyncSession) -> Tournament:
+    """Простая версия без глубоких загрузок (для отладки)."""
+    result = await db.execute(
+        select(Tournament).where(Tournament.id == tournament_id)
+    )
+    tournament = result.scalar_one_or_none()
+
+    if not tournament:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    
+    return tournament
 
 
 # ============================
@@ -151,54 +177,134 @@ async def get_tournament(
     db: AsyncSession = Depends(get_db)
 ):
     """Получить подробно турнир по ID."""
-    tournament = await _get_tournament_or_404(tournament_id, db)
+    result = await db.execute(
+        select(Tournament)
+        .options(
+            selectinload(Tournament.draft_session),
+            selectinload(Tournament.teams),
+            selectinload(Tournament.stages),
+        )
+        .where(Tournament.id == tournament_id)
+    )
+    tournament = result.scalar_one_or_none()
+
+    if not tournament:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+
     return tournament
 
+# ============================
+# GET /users/search
+# ============================
 
+@router.get("/users/search")
+async def search_users(
+    q: str = "",
+    current_admin: User = Depends(get_current_admin_required),
+    db: AsyncSession = Depends(get_db)
+):
+    """Поиск пользователей для админки."""
+    if not q or len(q.strip()) < 2:
+        return {"users": []}
+
+    query = f"%{q.strip()}%"
+
+    result = await db.execute(
+        select(User)
+        .where(
+            or_(
+                User.username.ilike(query),
+                User.display_name.ilike(query) if hasattr(User, 'display_name') else False
+            )
+        )
+        .limit(10)
+        .order_by(User.username.asc())
+    )
+
+    users = result.scalars().all()
+
+    return {
+        "users": [
+            {
+                "id": user.id,
+                "username": user.username,
+                "display_name": user.display_name or user.username,
+                "discord_tag": user.username,           # ← Изменено здесь
+            }
+            for user in users
+        ]
+    }
+
+# ============================
+# GET /tournaments/users/search
+# ============================
+
+@router.get("/users/search")
+async def search_users(
+    q: str = "",
+    current_admin: User = Depends(get_current_admin_required),
+    db: AsyncSession = Depends(get_db)
+):
+    """Поиск пользователей для админки."""
+    if not q or len(q.strip()) < 2:
+        return {"users": []}
+
+    try:
+        query = f"%{q.strip()}%"
+
+        result = await db.execute(
+            select(User)
+            .where(
+                or_(
+                    User.username.ilike(query),
+                    User.display_name.ilike(query) if hasattr(User, 'display_name') else False
+                )
+            )
+            .limit(10)
+            .order_by(User.username.asc())
+        )
+
+        users = result.scalars().all()
+
+        return {
+            "users": [
+                {
+                    "id": user.id,
+                    "username": user.username,
+                    "display_name": user.display_name or user.username,
+                    "discord_tag": getattr(user, 'discord_tag', None),
+                }
+                for user in users
+            ]
+        }
+
+    except Exception as e:
+        print("=== ERROR IN SEARCH_USERS ===")
+        print(type(e).__name__, ":", e)
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Internal server error during search")
+    
 # ============================
 # POST /tournaments/ (СОЗДАНИЕ)
 # ============================
 
 @router.post("/", response_model=TournamentResponse, status_code=status.HTTP_201_CREATED)
 async def create_tournament(
-    request: Request,
+    tournament_data: TournamentCreate,           # ← Изменено: используем Pydantic модель
     current_admin: User = Depends(get_current_admin_required),
     db: AsyncSession = Depends(get_db)
 ):
     """Создать новый турнир (только админ)."""
     try:
-        body = await request.json()
-        
-        # Валидируем формат
-        if body.get("format") not in ("mix", "draft"):
-            raise HTTPException(status_code=400, detail="Format must be 'mix' or 'draft'")
-        
-        tournament = Tournament(
-            title=body["title"],
-            format=body["format"],
-            description=body.get("description"),
-            start_date=datetime.fromisoformat(body["start_date"].replace('Z', '+00:00')),
-            end_date=datetime.fromisoformat(body["end_date"].replace('Z', '+00:00')),
-            status=body.get("status", "upcoming"),
-            max_participants=body.get("max_participants", 100)
-        )
-
-        db.add(tournament)
-        await db.commit()
-        await db.refresh(tournament)
+        tournament = await TournamentService.create(db, tournament_data)
         return tournament
-
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid JSON")
-    except KeyError as e:
-        raise HTTPException(status_code=400, detail=f"Missing field: {str(e)}")
     except Exception as e:
         await db.rollback()
-        raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
-
-
+        raise HTTPException(status_code=400, detail=str(e))
+    
 # ============================
-# PUT /tournaments/{id}
+# UPDATE /tournaments/{id}
 # ============================
 
 @router.put("/{tournament_id}", response_model=TournamentResponse)
@@ -209,16 +315,14 @@ async def update_tournament(
     db: AsyncSession = Depends(get_db)
 ):
     """Обновить турнир (только админ)."""
-    tournament = await _get_tournament_or_404(tournament_id, db)
-
-    update_data = tournament_data.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(tournament, field, value)
-
-    await db.commit()
-    await db.refresh(tournament)
-    return tournament
-
+    try:
+        tournament = await TournamentService.update(db, tournament_id, tournament_data)
+        return tournament
+    except TeamConfigImmutableError as e:
+        raise e  # Пробрасываем наше кастомное исключение 409
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
 
 # ============================
 # DELETE /tournaments/{id}
@@ -290,47 +394,93 @@ async def get_tournament_bracket(
 @router.get("/{tournament_id}/participants")
 async def get_tournament_participants(
     tournament_id: int,
+    search: Optional[str] = None,
     db: AsyncSession = Depends(get_db)
 ):
-    """Получить список одобренных участников турнира (публичный)."""
+    """Получить участников турнира. С параметром search ищет по Discord или BattleTag."""
     await _get_tournament_or_404(tournament_id, db)
 
-    result = await db.execute(
-        select(TournamentParticipant, User)
-        .join(User, TournamentParticipant.user_id == User.id)
-        .where(
-            TournamentParticipant.tournament_id == tournament_id,
-            TournamentParticipant.is_allowed == True
+    query = select(TournamentParticipant, User).join(
+        User, TournamentParticipant.user_id == User.id
+    ).where(TournamentParticipant.tournament_id == tournament_id)
+
+    if search and search.strip():
+        search_term = f"%{search.strip()}%"
+        query = query.where(
+            or_(
+                TournamentParticipant.application_data.ilike(f'%battletag_value%:%{search_term}%'),
+                TournamentParticipant.application_data.ilike(f'%discord_tag%:%{search_term}%'),
+                User.username.ilike(search_term),
+                User.display_name.ilike(search_term)
+            )
         )
-        .order_by(TournamentParticipant.registered_at.asc())
-    )
+
+    result = await db.execute(query.order_by(TournamentParticipant.registered_at.asc()))
     rows = result.all()
 
     participants = []
-    for participant, user in rows:
-        # Тянем роли и батлтег именно из ЗАЯВКИ, а не из профиля
+    for p, u in rows:
         app_data = {}
-        if participant.application_data:
+        if p.application_data:
             try:
-                app_data = json.loads(participant.application_data)
+                app_data = json.loads(p.application_data)
             except:
                 pass
 
         participants.append({
-            "id": user.id,
-            "battle_tag": app_data.get("battletag_value") or user.username,
-            "display_name": user.display_name or user.username,
-            "avatar_url": user.avatar_url,
-            "primary_role": app_data.get("primary_role"),
-            "secondary_role": app_data.get("secondary_role"),
-            "bio": app_data.get("bio"),
-            "status": participant.status,
-            "is_allowed": participant.is_allowed,
-            "registered_at": participant.registered_at.isoformat() if participant.registered_at else None,
+            "user_id": u.id,
+            "user_display_name": u.display_name or u.username,
+            "user_username": u.username,
+            "application_data": app_data,
+            "is_captain": p.is_captain,
         })
 
-    return participants
+    return {"participants": participants}
 
+# ============================
+# GET /tournaments/{tournament_id}/teams
+# ============================
+
+@router.get("/{tournament_id}/teams")
+async def get_tournament_teams(
+    tournament_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Получить все команды турнира с игроками."""
+    await _get_tournament_or_404(tournament_id, db)
+
+    result = await db.execute(
+        select(Team)
+        .where(Team.tournament_id == tournament_id)
+        .options(
+            selectinload(Team.tournament_participants)
+            .selectinload(TournamentParticipant.user)
+        )
+    )
+    teams = result.scalars().all()
+
+    return {
+        "teams": [
+            {
+                "id": team.id,
+                "name": team.name,
+                "division": getattr(team, 'division', None),   # ← Безопасно
+                "players": [
+                    {
+                        "id": p.id,
+                        "user_id": p.user_id,
+                        "display_name": p.user.display_name or p.user.username if p.user else "—",
+                        "username": p.user.username if p.user else "—",
+                        "is_captain": p.is_captain or False,
+                        "application_data": json.loads(p.application_data) if isinstance(p.application_data, str) 
+                                           else (p.application_data if isinstance(p.application_data, dict) else {})
+                    }
+                    for p in sorted(team.tournament_participants, key=lambda x: (not x.is_captain, x.id))
+                ]
+            }
+            for team in teams
+        ]
+    }
 
 # ============================
 # GET /tournaments/{id}/my-status
@@ -754,6 +904,195 @@ async def reject_application(
 
     return {"message": "Application rejected", "user_id": user_id}
 
+# ============================
+# POST /tournaments/{id}/add-participant (АДМИН)
+# ============================
+
+@router.post("/{tournament_id}/add-participant")
+async def add_participant_manually(
+    tournament_id: int,
+    data: AddParticipantRequest,                    # ← Используем Pydantic модель
+    current_admin: User = Depends(get_current_admin_required),
+    db: AsyncSession = Depends(get_db)
+):
+    """Админ вручную добавляет участника (существующего или нового)."""
+    tournament = await _get_tournament_or_404(tournament_id, db)
+
+    # Ищем пользователя
+    result = await db.execute(
+        select(User).where(User.username == data.username)
+    )
+    user = result.scalar_one_or_none()
+
+    if not user:
+        user = User(
+            username=data.username,
+            display_name=data.discord_tag or data.username,
+            role="user",
+            is_ghost=True,
+            created_at=datetime.now(timezone.utc)
+        )
+        db.add(user)
+        await db.flush()
+
+    # Проверка на дубликат
+    existing = await db.execute(
+        select(TournamentParticipant).where(
+            TournamentParticipant.tournament_id == tournament_id,
+            TournamentParticipant.user_id == user.id
+        )
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="User is already registered for this tournament")
+
+    app_data = {
+        "primary_role": data.primary_role,
+        "secondary_role": data.secondary_role,
+        "battletag_value": data.battletag_value,
+        "division": data.division,
+        "bio": data.bio,
+        "added_by_admin": True,
+        "added_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    participant = TournamentParticipant(
+        tournament_id=tournament_id,
+        user_id=user.id,
+        status="registered",
+        is_allowed=True,
+        is_captain=data.is_captain,
+        application_data=json.dumps(app_data, ensure_ascii=False),
+        registered_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc)
+    )
+
+    db.add(participant)
+    await db.commit()
+    await db.refresh(participant)
+
+    return {"success": True, "message": "Участник успешно добавлен", "participant_id": participant.id}
+
+# ============================
+# GET /tournaments/{id}/free-players
+# ============================
+
+@router.get("/{tournament_id}/free-players")
+async def get_free_players(
+    tournament_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Возвращает только тех зарегистрированных игроков, которые реально НЕ состоят ни в одной команде."""
+    await _get_tournament_or_404(tournament_id, db)
+
+    result = await db.execute(
+        select(TournamentParticipant, User)
+        .join(User, TournamentParticipant.user_id == User.id)
+        .where(
+            TournamentParticipant.tournament_id == tournament_id,
+            TournamentParticipant.status == "registered",
+            # Исключаем всех, у кого уже есть запись с заполненным team_id
+            ~exists().where(
+                (TournamentParticipant.user_id == TournamentParticipant.user_id) &
+                (TournamentParticipant.tournament_id == tournament_id) &
+                (TournamentParticipant.team_id.isnot(None))
+            )
+        )
+        .options(selectinload(TournamentParticipant.user))
+        .order_by(TournamentParticipant.registered_at.asc())
+    )
+
+    rows = result.all()
+    free_players = []
+
+    for participant, user in rows:
+        app_data = json.loads(participant.application_data) if participant.application_data else {}
+        
+        free_players.append({
+            "user_id": user.id,
+            "user_display_name": user.display_name or user.username,
+            "user_username": user.username,
+            "application_data": app_data,
+            "is_captain": participant.is_captain,
+        })
+
+    return {"free_players": free_players}
+
+# ============================
+# PLAYER REPLACEMENT SYSTEM (только для админа)
+# ============================
+
+@router.post("/{tournament_id}/teams/{team_id}/replace", status_code=status.HTTP_201_CREATED)
+async def replace_player_in_team(
+    tournament_id: int,
+    team_id: int,
+    body: ReplacePlayerRequest,
+    current_admin: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Заменить игрока в команде (только админ)."""
+    try:
+        result = await TournamentService.replace_player(
+            db=db,
+            tournament_id=tournament_id,
+            team_id=team_id,
+            old_participant_id=body.old_participant_id,
+            new_participant_id=body.new_participant_id,
+            replaced_by_user_id=current_admin.id,
+            reason=body.reason,
+        )
+        return result
+    except HTTPException:
+        await db.rollback()
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Error in replace_player: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post("/{tournament_id}/teams/{team_id}/replace/{replacement_id}/undo")
+async def undo_player_replacement(
+    tournament_id: int,
+    team_id: int,
+    replacement_id: int,
+    current_admin: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Откатить замену (только админ)."""
+    try:
+        result = await TournamentService.undo_replace(
+            db=db,
+            replacement_id=replacement_id,
+            undone_by_user_id=current_admin.id
+        )
+        return result
+    except HTTPException:
+        await db.rollback()
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Error in undo_replace: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/{tournament_id}/teams/{team_id}/history")
+async def get_team_replacement_history(
+    tournament_id: int,
+    team_id: int,
+    current_admin: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Получить историю замен в команде (для админки)."""
+    try:
+        await TournamentService.get_by_id(db, tournament_id)  # проверка существования турнира
+        return await TournamentService.get_team_with_history(db, team_id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in get_team_replacement_history: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
 
 # ============================
 # PRIVATE HELPERS
@@ -841,3 +1180,385 @@ async def _resolve_battletag(
         await db.flush()  # flush чтобы получить id до commit
 
         return new_bt.id, new_bt.tag
+    
+
+    # ============================
+# GOOGLE SHEETS INTEGRATION
+# ============================
+
+@router.put("/{tournament_id}/sheet-id")
+async def set_google_sheet_id(
+    tournament_id: int,
+    body: dict,
+    current_admin: User = Depends(get_current_admin_required),
+    db: AsyncSession = Depends(get_db)
+):
+    """Сохранить ID Google таблицы для турнира."""
+    result = await db.execute(
+        select(Tournament).where(Tournament.id == tournament_id)
+    )
+    tournament = result.scalar_one_or_none()
+    
+    if not tournament:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+
+    tournament.google_sheet_id = body.get("sheet_id")
+    db.add(tournament)
+    await db.commit()
+    await db.refresh(tournament)
+    
+    return {"success": True, "sheet_id": tournament.google_sheet_id}
+
+
+@router.post("/{tournament_id}/export-to-sheets")
+async def export_to_google_sheets(
+    tournament_id: int,
+    current_admin: User = Depends(get_current_admin_required),
+    db: AsyncSession = Depends(get_db)
+):
+    """Экспорт участников турнира в Google Sheets."""
+    from app.services.sheets_service import SheetsService
+    
+    result = await db.execute(
+        select(Tournament).where(Tournament.id == tournament_id)
+    )
+    tournament = result.scalar_one_or_none()
+
+    if not tournament:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+
+    if not tournament.google_sheet_id:
+        raise HTTPException(status_code=400, detail="Google sheet ID not set")
+
+    participants_result = await db.execute(
+        select(TournamentParticipant, User).join(
+            User, TournamentParticipant.user_id == User.id
+        ).where(TournamentParticipant.tournament_id == tournament_id)
+    )
+    participants_data = []
+    for participant, user in participants_result.all():
+        participants_data.append({
+            "discord": user.username or "",
+            "battle_tag": user.battle_tag or "",
+            "alt_battle_tags": "",
+            "primary_role": "",
+            "secondary_role": "",
+            "wants_captain": participant.is_captain,
+            "notes": "",
+            "division": user.division or "",
+            "approved": participant.is_allowed,
+            "banned": participant.status == "banned",
+            "checked_in": participant.checkedin_at is not None,
+        })
+
+    sheets_service = SheetsService()
+    result = await sheets_service.export_participants(
+        tournament.google_sheet_id,
+        tournament.title,
+        participants_data
+    )
+
+    return result
+
+
+
+# ============================
+# CAPTAIN MANAGEMENT (CAPTAIN ENDPOINTS)
+# ============================
+
+@router.post("/participants/{participant_id}/promote")
+async def promote_to_captain(
+    participant_id: int,
+    current_admin: User = Depends(get_current_admin_required),
+    db: AsyncSession = Depends(get_db)
+):
+    """Назначить участника капитаном (только админ)."""
+    result = await db.execute(
+        select(TournamentParticipant).where(TournamentParticipant.id == participant_id)
+    )
+    participant = result.scalar_one_or_none()
+    
+    if not participant:
+        raise HTTPException(status_code=404, detail="Participant not found")
+    
+    if participant.is_allowed:
+        # Проверяем что заявка одобрена перед назначением капитана
+        pass
+    else:
+        raise HTTPException(
+            status_code=400, 
+            detail="Participant must be approved before promoting to captain"
+        )
+    
+    # Снимаем статус капитана со всех остальных участников этого турнира
+    await db.execute(
+        update(TournamentParticipant)
+        .where(
+            TournamentParticipant.tournament_id == participant.tournament_id,
+            TournamentParticipant.is_captain == True
+        )
+        .values(is_captain=False)
+    )
+    
+    # Назначаем нового капитана
+    participant.is_captain = True
+    participant.updated_at = datetime.now(timezone.utc)
+    
+    db.add(participant)
+    await db.commit()
+    await db.refresh(participant)
+    
+    return {
+        "success": True,
+        "message": f"{participant.user.username} promoted to captain",
+        "tournament_id": participant.tournament_id,
+        "participant_id": participant_id
+    }
+
+
+@router.post("/participants/{participant_id}/demote")
+async def demote_from_captain(
+    participant_id: int,
+    current_admin: User = Depends(get_current_admin_required),
+    db: AsyncSession = Depends(get_db)
+):
+    """Снять статус капитана с участника (только админ)."""
+    result = await db.execute(
+        select(TournamentParticipant).where(TournamentParticipant.id == participant_id)
+    )
+    participant = result.scalar_one_or_none()
+    
+    if not participant:
+        raise HTTPException(status_code=404, detail="Participant not found")
+    
+    if not participant.is_captain:
+        raise HTTPException(
+            status_code=400, 
+            detail="This participant is not a captain"
+        )
+    
+    participant.is_captain = False
+    participant.updated_at = datetime.now(timezone.utc)
+    
+    db.add(participant)
+    await db.commit()
+    await db.refresh(participant)
+    
+    return {
+        "success": True,
+        "message": f"{participant.user.username} demoted from captain",
+        "tournament_id": participant.tournament_id,
+        "participant_id": participant_id
+    }
+
+
+@router.get("/{tournament_id}/captains")
+async def get_tournament_captains(
+    tournament_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Получить список капитанов турнира."""
+    tournament = await _get_tournament_or_404(tournament_id, db)
+    
+    result = await db.execute(
+        select(TournamentParticipant, User)
+        .join(User, TournamentParticipant.user_id == User.id)
+        .where(
+            TournamentParticipant.tournament_id == tournament_id,
+            TournamentParticipant.is_captain == True,
+            TournamentParticipant.status.in_(["pending", "registered"])
+        )
+        .order_by(TournamentParticipant.registered_at.asc())
+    )
+    captains = result.all()
+    
+    captains_list = []
+    for p, u in captains:
+        app_data = {}
+        if p.application_data:
+            try:
+                app_data = json.loads(p.application_data)
+            except:
+                pass
+        
+        captains_list.append({
+            "id": p.id,
+            "user_id": u.id,
+            "username": u.username,
+            "display_name": u.display_name or u.username,
+            "battle_tag": app_data.get("battletag_value"),
+            "primary_role": app_data.get("primary_role"),
+            "secondary_role": app_data.get("secondary_role"),
+            "team_name": None,  # Заполняется после драфта
+            "status": p.status,
+        })
+    
+    return {
+        "tournament_id": tournament_id,
+        "tournament_title": tournament.title,
+        "captains_count": len(captains_list),
+        "captains": captains_list
+    }
+
+
+# ============================
+# BULK ACTIONS (МАССОВЫЕ ДЕЙСТВИЯ)
+# ============================
+
+from pydantic import BaseModel
+from typing import List
+
+class BulkApproveReject(BaseModel):
+    user_ids: List[int]
+
+@router.post("/{tournament_id}/applications/approve-bulk")
+async def approve_applications_bulk(
+    tournament_id: int,
+    body: BulkApproveReject,
+    current_admin: User = Depends(get_current_admin_required),
+    db: AsyncSession = Depends(get_db)
+):
+    """Массовое одобрение заявок (только админ)."""
+    tournament = await _get_tournament_or_404(tournament_id, db)
+    now = datetime.now(timezone.utc)
+    
+    approved_count = 0
+    for user_id in body.user_ids:
+        result = await db.execute(
+            select(TournamentParticipant).where(
+                TournamentParticipant.tournament_id == tournament_id,
+                TournamentParticipant.user_id == user_id
+            )
+        )
+        participant = result.scalar_one_or_none()
+        
+        if participant and participant.status != "registered":
+            # Обновляем заявку
+            app_data = {}
+            if participant.application_data:
+                try:
+                    app_data = json.loads(participant.application_data)
+                except:
+                    pass
+            
+            app_data.update({
+                "approved_at": now.isoformat(),
+                "approved_by": current_admin.id,
+            })
+            
+            participant.application_data = json.dumps(app_data, ensure_ascii=False)
+            participant.status = "registered"
+            participant.is_allowed = True
+            participant.updated_at = now
+            
+            db.add(participant)
+            approved_count += 1
+    
+    await db.commit()
+    
+    return {
+        "success": True,
+        "approved_count": approved_count,
+        "total_requested": len(body.user_ids)
+    }
+
+
+@router.post("/{tournament_id}/applications/reject-bulk")
+async def reject_applications_bulk(
+    tournament_id: int,
+    body: BulkApproveReject,
+    reason: Optional[str] = None,
+    current_admin: User = Depends(get_current_admin_required),
+    db: AsyncSession = Depends(get_db)
+):
+    """Массовое отклонение заявок (только админ)."""
+    tournament = await _get_tournament_or_404(tournament_id, db)
+    now = datetime.now(timezone.utc)
+    
+    rejected_count = 0
+    for user_id in body.user_ids:
+        result = await db.execute(
+            select(TournamentParticipant).where(
+                TournamentParticipant.tournament_id == tournament_id,
+                TournamentParticipant.user_id == user_id
+            )
+        )
+        participant = result.scalar_one_or_none()
+        
+        if participant and participant.status != "rejected":
+            # Обновляем заявку
+            app_data = {}
+            if participant.application_data:
+                try:
+                    app_data = json.loads(participant.application_data)
+                except:
+                    pass
+            
+            app_data.update({
+                "rejected_at": now.isoformat(),
+                "rejected_reason": reason or "Rejected by admin",
+                "approved_at": None,
+                "approved_by": None,
+            })
+            
+            participant.application_data = json.dumps(app_data, ensure_ascii=False)
+            participant.status = "rejected"
+            participant.is_allowed = False
+            participant.updated_at = now
+            
+            db.add(participant)
+            rejected_count += 1
+    
+    await db.commit()
+    
+    return {
+        "success": True,
+        "rejected_count": rejected_count,
+        "total_requested": len(body.user_ids)
+    }
+
+
+@router.post("/{tournament_id}/teams/{team_id}/replace/{old_participant_id}")
+async def replace_player_in_team(
+    tournament_id: int,
+    team_id: int,
+    old_participant_id: int,
+    new_user_id: int,
+    current_admin: User = Depends(get_current_admin_required),
+    db: AsyncSession = Depends(get_db)
+):
+    """Заменить игрока в команде."""
+    # Проверяем существование старого участника
+    old = await db.get(TournamentParticipant, old_participant_id)
+    if not old or old.tournament_id != tournament_id or old.team_id != team_id:
+        raise HTTPException(status_code=404, detail="Old participant not found in team")
+
+    # Проверяем нового пользователя
+    new_user = await db.get(User, new_user_id)
+    if not new_user:
+        raise HTTPException(status_code=404, detail="New user not found")
+
+    # Создаём нового участника
+    new_participant = TournamentParticipant(
+        tournament_id=tournament_id,
+        user_id=new_user_id,
+        team_id=team_id,
+        status="registered",
+        is_allowed=True,
+        is_captain=False,
+        application_data=old.application_data,  # копируем данные
+        registered_at=datetime.now(timezone.utc),
+        replaced_by=old.id,
+        replaced_at=datetime.now(timezone.utc)
+    )
+
+    db.add(new_participant)
+    await db.commit()
+    await db.refresh(new_participant)
+
+    return {
+        "success": True,
+        "message": "Игрок успешно заменён",
+        "old_participant_id": old.id,
+        "new_participant_id": new_participant.id
+    }

@@ -1,0 +1,207 @@
+/* ============================================================
+   PlayerCard.css — Карточка игрока (левая верхняя)
+   Структура: 2 блока + <hr> между ними
+   ============================================================ */
+
+.player-card {
+  position: relative;
+  width: 450px;
+  height: 255px;
+  background: var(--block-bg);
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  clip-path: polygon(
+    var(--skew-playercard) 0%,
+    100% 0%,
+    100% calc(100% - var(--skew-playercard)),
+    calc(100% - var(--skew-playercard)) 100%,
+    0% 100%,
+    0% var(--skew-playercard)
+  );
+}
+
+.player-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+   Вертикальная акцентная линия слева
+   Размер: 5×230px, скошенная (как у карточки)
+   left: 1px, top: 12.5px
+   ============================================================ */
+
+.player-card__accent-line {
+  position: absolute;
+  top: 26px;
+  left: 0px;
+  width: 5px;
+  height: 230px;
+  background: var(--tournament-accent);
+  z-index: 2;
+}
+
+/* ============================================================
+   Верхний блок — profile header
+   padding: 25px 30px 0 30px
+   ============================================================ */
+
+.player-card__header {
+  display: flex;
+  align-items: center;
+  padding: 20px 25px 0 25px;
+  gap: 20px;
+}
+
+/* Аватарка 100×100, display flex, align-items: center */
+.player-card__avatar-wrapper {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.player-card__avatar {
+  width: 100px;
+  height: 100px;
+  border: 1px solid var(--tournament-accent-light);
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Профиль инфо: display flex, flex-direction: column */
+.player-card__profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Никнейм */
+.player-card__nickname {
+  font-family: var(--font-arial);
+  font-size: 40px;
+  font-weight: 900;
+  color: var(--tournament-accent-light);
+  line-height: 1;
+  margin: 0;
+}
+
+/* BattleTag строка */
+.player-card__battletag-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.player-card__battletag {
+  display: inline-flex;
+  align-items: center;
+  height: 25px;
+  padding: 7px 15px;
+  border: 1px solid var(--tournament-accent);
+  border-radius: 40px;
+  font-family: var(--font-arial-body);
+  font-size: 13px;
+  color: var(--accent);
+  line-height: 1;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.player-card__battletag-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: var(--tournament-accent);
+  color: var(--block-bg);
+  font-family: var(--font-arial-body);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* Twitch usertag: display flex, align-items: center */
+.player-card__usertag {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-card__usertag-icon {
+  width: 17px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.player-card__usertag-text {
+  font-family: var(--font-arial-body);
+  font-size: 17px;
+  color: var(--tournament-accent);
+}
+
+/* ============================================================
+   Разделительная линия <hr>
+   border-top: 1px solid #A7F2A2
+   ============================================================ */
+
+.player-card__divider {
+  border: none;
+  border-top: 1px solid var(--accent-light);
+  margin: 15px 25px 15px 25px;
+  height: 0;
+}
+
+/* ============================================================
+   Нижний блок — statsrow
+   display: flex, justify-content: space-between
+   ============================================================ */
+
+.player-card__statsrow {
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+}
+
+/* Stat item: flex-1, text-align: center */
+.player-card__stat-item {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.player-card__stat-value {
+  font-family: var(--font-ponter);
+  font-size: 35px;
+  color: var(--accent-light);
+  line-height: 1;
+  margin-bottom: 20px;
+}
+
+.player-card__stat-label {
+  font-family: var(--font-ponter);
+  font-size: 17px;
+  color: var(--tournament-accent);
+  line-height: 1;
+}
+
+
+.player-card__avatar-wrapper {
+  position: relative;
+}
+
+.player-card__avatar-letter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Ponter', sans-serif;
+  font-size: 32px;
+  color: var(--accent, #13AD91);
+  pointer-events: none;
+}

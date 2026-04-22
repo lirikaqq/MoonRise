@@ -26,5 +26,8 @@ class HomepageSettings(Base):
     registration_url = Column(String(500), default="#")
     info_text = Column(String(100), default="INFO")
     info_url = Column(String(500), default="#")
-    
+
+    # Twitch-канал для embed на главной
+    twitch_channel = Column(String(100), nullable=True)
+
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

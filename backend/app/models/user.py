@@ -17,12 +17,14 @@ class User(Base):
     display_name = Column(String(255), nullable=True)
     avatar_url = Column(String(500), nullable=True)
 
+    
     role = Column(String(50), default="player", nullable=False)
-    division = Column(String(50), nullable=True)
+    division = Column(Integer, nullable=True, index=True)
 
     # Игровые роли Overwatch
-    primary_role = Column(String(50), nullable=True)
-    secondary_role = Column(String(50), nullable=True)
+    primary_role = Column(Text, nullable=True)
+
+    secondary_role = Column(Text, nullable=True)
     
     # Поле для "призрачных" профилей, созданных скриптом
     is_ghost = Column(Boolean, default=False, nullable=False)

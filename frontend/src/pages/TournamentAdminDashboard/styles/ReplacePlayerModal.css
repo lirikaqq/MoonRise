@@ -1,0 +1,126 @@
+.replace-modal {
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 560px;
+  padding: 2rem;
+}
+
+.modal-title {
+  font-family: "Arial Black", sans-serif;
+  font-size: 1.8rem;
+  color: var(--accent-light);
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.modal-subtitle {
+  text-align: center;
+  color: var(--accent);
+  margin-bottom: 2rem;
+  font-size: 1.05rem;
+}
+
+/* ===================== OPTIONS ===================== */
+.replace-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.replace-option {
+  background: var(--block-bg);
+  border: 2px solid #3a5160;
+  border-radius: 12px;
+  padding: 2rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.replace-option:hover {
+  border-color: var(--accent);
+  transform: translateY(-6px);
+  background: rgba(19, 200, 176, 0.08);
+}
+
+.replace-option h3 {
+  font-family: "Arial Black", sans-serif;
+  margin: 1rem 0 0.5rem 0;
+  color: var(--text-soft);
+}
+
+.replace-option p {
+  color: #8ba39b;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ===================== SEARCH MODE ===================== */
+.search-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: #1a2c38;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.search-input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.search-results {
+  max-height: 340px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+}
+
+.search-result-item {
+  padding: 14px 16px;
+  background: var(--block-bg);
+  margin-bottom: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.search-result-item:hover {
+  background: var(--accent-dark);
+  color: white;
+}
+
+.search-result-item strong {
+  display: block;
+  font-size: 1.05rem;
+}
+
+.search-result-item .small {
+  font-size: 0.85rem;
+  color: #8ba39b;
+  margin-top: 4px;
+}
+
+.loading, .no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: #8ba39b;
+  font-style: italic;
+}
+
+/* Кнопка назад */
+.btn-secondary {
+  width: 100%;
+  padding: 14px;
+  background: #23423f;
+  color: var(--text-soft);
+  border: 1px solid #3a5160;
+  border-radius: 8px;
+  font-weight: 600;
+}

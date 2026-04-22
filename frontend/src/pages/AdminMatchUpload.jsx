@@ -505,7 +505,9 @@ export default function AdminMatchUpload() {
             <div className="button-group">
               <button
                 className="button primary"
-                onClick={() => navigate(`/matches/${result.match_id}`)}
+                onClick={() => navigate(`/matches/${result.match_id}`, {
+                  state: { from: { url: window.location.pathname, label: 'UPLOAD MATCH' } }
+                })}
               >
                 Открыть матч
               </button>

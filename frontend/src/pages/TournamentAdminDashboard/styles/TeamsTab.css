@@ -1,0 +1,409 @@
+/* TeamsTab.css */
+
+.teams-tab {
+font-family: 'Montserrat', sans-serif;
+color: var(--text-soft);
+}
+
+.teams-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+background-color: var(--block-bg);
+border: 1px solid var(--border);
+border-radius: 12px;
+padding: 18px 24px;
+margin-bottom: 24px;
+}
+
+.teams-title {
+display: flex;
+align-items: center;
+gap: 12px;
+font-size: 22px;
+font-weight: 700;
+}
+
+.teams-title h2 {
+margin: 0;
+}
+
+.teams-count {
+background-color: rgba(19, 200, 176, 0.15);
+color: var(--accent);
+padding: 4px 14px;
+border-radius: 20px;
+font-size: 14px;
+font-weight: 600;
+}
+
+.teams-actions {
+display: flex;
+gap: 12px;
+}
+
+.btn {
+display: flex;
+align-items: center;
+gap: 8px;
+padding: 12px 22px;
+border: none;
+border-radius: 10px;
+font-weight: 700;
+font-size: 15px;
+cursor: pointer;
+transition: all 0.25s;
+}
+
+.btn-primary {
+background-color: var(--accent);
+color: #000;
+}
+
+.btn-primary:hover {
+background-color: var(--accent-light);
+transform: translateY(-2px);
+}
+
+.btn-balancer {
+background-color: #7c3aed;
+color: white;
+}
+
+.btn-balancer:hover {
+background-color: #8b5cf6;
+transform: translateY(-2px);
+}
+
+/* Пустое состояние */
+.empty-state {
+background-color: var(--block-bg);
+border: 2px dashed var(--border);
+border-radius: 16px;
+padding: 90px 40px;
+text-align: center;
+color: #5a7a85;
+font-size: 18px;
+}
+
+.empty-hint {
+display: block;
+margin-top: 12px;
+font-size: 15px;
+opacity: 0.8;
+}
+
+/* Сетка команд */
+.teams-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+gap: 20px;
+}
+
+.team-card {
+background-color: var(--block-bg);
+border: 1px solid var(--border);
+border-radius: 14px;
+overflow: hidden;
+transition: all 0.25s;
+}
+
+.team-card:hover {
+border-color: var(--accent);
+transform: translateY(-4px);
+}
+
+.team-header {
+padding: 18px 22px;
+background: #0a1821;
+display: flex;
+justify-content: space-between;
+align-items: center;
+border-bottom: 1px solid var(--border);
+}
+
+.team-header h3 {
+margin: 0;
+color: var(--accent);
+font-size: 18px;
+}
+
+.team-size {
+background-color: rgba(19, 200, 176, 0.2);
+color: var(--accent);
+padding: 4px 12px;
+border-radius: 9999px;
+font-size: 13.5px;
+font-weight: 600;
+}
+
+.team-players {
+padding: 16px 22px;
+min-height: 180px;
+background-color: #0f1e29;
+}
+
+.team-player {
+padding: 10px 14px;
+background-color: #1a2c38;
+margin-bottom: 8px;
+border-radius: 8px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.captain-badge {
+color: #ffeb3b;
+font-size: 18px;
+}
+
+.team-empty {
+color: #5a7a85;
+font-style: italic;
+text-align: center;
+padding: 50px 20px;
+}
+
+.team-footer {
+padding: 14px 22px;
+display: flex;
+gap: 10px;
+background-color: var(--block-bg);
+border-top: 1px solid var(--border);
+}
+
+.btn-edit, .btn-delete {
+flex: 1;
+padding: 10px;
+font-size: 14px;
+border-radius: 8px;
+}
+
+.btn-edit {
+background-color: #334155;
+color: white;
+}
+
+.btn-delete {
+background-color: #991b1b;
+color: white;
+}
+
+/* Инфо-блок балансера */
+.balancer-info {
+margin-top: 40px;
+padding: 20px;
+background-color: rgba(124, 58, 237, 0.1);
+border: 1px solid rgba(167, 139, 250, 0.3);
+border-radius: 12px;
+color: #c4b5fd;
+font-size: 14.5px;
+line-height: 1.6;
+}
+
+.balancer-info strong {
+color: #a78bfa;
+display: block;
+margin-bottom: 8px;
+}
+
+.team-card {
+background: var(--block-bg);
+border: 1px solid var(--border);
+border-radius: 12px;
+padding: 1.2rem;
+position: relative;
+}
+
+.team-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 1rem;
+}
+
+.team-division {
+font-family: "Palui", sans-serif;
+font-size: 0.9rem;
+color: var(--accent-light);
+}
+
+.division-number {
+font-family: "Arial Black", sans-serif;
+font-size: 1.5rem;
+color: var(--accent);
+display: block;
+line-height: 1;
+}
+
+.team-players {
+margin-bottom: 1rem;
+}
+
+.team-player {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 10px 0;
+border-bottom: 1px solid rgba(19, 200, 176, 0.1);
+}
+
+.player-main {
+font-weight: 600;
+}
+
+.captain-badge {
+margin-left: 8px;
+color: #ffd700;
+}
+
+.player-stats {
+font-size: 0.85rem;
+color: #8ba39b;
+display: flex;
+gap: 12px;
+}
+
+.player-div, .player-rank {
+color: var(--accent);
+}
+
+.team-footer {
+text-align: right;
+padding-top: 10px;
+border-top: 1px solid rgba(19, 200, 176, 0.2);
+}
+
+.avg-score {
+font-family: "Palui", sans-serif;
+color: var(--text-soft);
+}
+
+.score-value {
+font-family: "Arial Black", sans-serif;
+font-size: 1.6rem;
+color: var(--accent-light);
+margin-left: 8px;
+}
+
+.team-player {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 10px 0;
+border-bottom: 1px solid rgba(19, 200, 176, 0.1);
+position: relative;
+}
+
+.team-player.replaced {
+text-decoration: line-through;
+opacity: 0.6;
+color: #888;
+}
+
+.btn-replace {
+background: #ff4444;
+color: white;
+border: none;
+border-radius: 4px;
+padding: 4px 8px;
+cursor: pointer;
+font-size: 0.8rem;
+}
+
+.btn-undo {
+background: #4CAF50;
+color: white;
+border: none;
+border-radius: 4px;
+padding: 4px 8px;
+cursor: pointer;
+font-size: 0.8rem;
+margin-left: 6px;
+}
+
+.team-footer {
+margin-top: auto;
+padding-top: 12px;
+border-top: 1px solid rgba(19, 200, 176, 0.2);
+text-align: right;
+}
+
+.avg-score {
+font-family: "Palui", sans-serif;
+color: var(--text-soft);
+}
+
+.score-value {
+font-family: "Arial Black", sans-serif;
+font-size: 1.6rem;
+color: var(--accent-light);
+margin-left: 8px;
+}
+
+.team-player {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 12px 16px;
+border-bottom: 1px solid rgba(19, 200, 176, 0.1);
+transition: background 0.2s ease;
+border-radius: 6px;
+margin-bottom: 4px;
+}
+
+.team-player:hover {
+background: rgba(19, 200, 176, 0.08);
+}
+
+.team-player.replaced {
+text-decoration: line-through;
+opacity: 0.65;
+color: #888;
+}
+
+.player-main {
+font-weight: 600;
+}
+
+.captain-badge {
+margin-left: 8px;
+color: #ffd700;
+}
+
+.player-stats {
+font-size: 0.85rem;
+color: #8ba39b;
+display: flex;
+gap: 16px;
+}
+
+.team-footer {
+margin-top: auto;
+padding-top: 12px;
+border-top: 1px solid rgba(19, 200, 176, 0.2);
+text-align: right;
+}
+
+.avg-score {
+font-family: "Palui", sans-serif;
+color: var(--text-soft);
+}
+
+.score-value {
+font-family: "Arial Black", sans-serif;
+font-size: 1.6rem;
+color: var(--accent-light);
+margin-left: 8px;
+}
+
+.btn-undo {
+background: #4CAF50;
+color: white;
+border: none;
+border-radius: 4px;
+padding: 4px 8px;
+cursor: pointer;
+font-size: 0.8rem;
+}

@@ -1,0 +1,249 @@
+.kill-feed-container {
+  background: rgba(16, 39, 47, 0.84);
+  border: 1px solid var(--border);
+  padding: 20px;
+  margin-top: 24px;
+  position: relative;
+}
+
+.kf-title {
+  margin: 0 0 16px 0;
+  font-family: "Ponter", sans-serif;
+  font-size: 16px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Round selector */
+.kf-rounds {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.kf-round-btn {
+  padding: 4px 12px;
+  font-family: "Ponter", sans-serif;
+  font-size: 12px;
+  color: rgba(167, 242, 162, 0.5);
+  background: rgba(35, 66, 63, 0.5);
+  border: 1px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+
+.kf-round-btn:hover {
+  color: var(--tournament-accent-light);
+  border-color: var(--tournament-accent);
+}
+
+.kf-round-btn--active {
+  color: var(--bg);
+  background: var(--tournament-accent);
+  border-color: var(--tournament-accent);
+}
+
+/* Kill feed list */
+.kf-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--tournament-accent) transparent;
+}
+
+.kf-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.kf-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kf-list::-webkit-scrollbar-thumb {
+  background: var(--tournament-accent);
+  border-radius: 2px;
+}
+
+/* Single kill entry */
+.kf-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(17, 27, 37, 0.6);
+  border: 1px solid rgba(19, 173, 145, 0.15);
+  border-left: 3px solid var(--tournament-accent);
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  color: #13AD91;
+  animation: kf-slide-in 0.3s ease-out both;
+  transition: background 0.2s;
+}
+
+.kf-entry:hover {
+  background: rgba(17, 27, 37, 0.9);
+  border-left-color: #A7F2A2;
+}
+
+/* First Blood highlight */
+.kf-entry--fb {
+  border-left-color: #FFD700;
+  background: rgba(255, 215, 0, 0.04);
+}
+
+.kf-fb-badge {
+  font-size: 9px;
+  font-weight: 700;
+  color: #FFD700;
+  background: rgba(255, 215, 0, 0.15);
+  padding: 1px 4px;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+@keyframes kf-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Killer / Victim sides */
+.kf-side {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.kf-killer .kf-name {
+  color: #A7F2A2;
+}
+
+.kf-victim .kf-name {
+  color: rgba(255, 100, 100, 0.85);
+}
+
+.kf-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  font-weight: 500;
+}
+
+/* Hero badge (text-based) */
+.kf-hero-badge {
+  width: 28px;
+  height: 22px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Montserrat", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.kf-hero-badge--killer {
+  color: #A7F2A2;
+  background: rgba(167, 242, 162, 0.12);
+  border: 1px solid rgba(167, 242, 162, 0.3);
+}
+
+.kf-hero-badge--victim {
+  color: rgba(255, 100, 100, 0.85);
+  background: rgba(255, 100, 100, 0.1);
+  border: 1px solid rgba(255, 100, 100, 0.25);
+}
+
+/* Weapon / kill type */
+.kf-weapon {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.kf-weapon-text {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(167, 242, 162, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: default;
+}
+
+.kf-hs {
+  font-size: 9px;
+  font-weight: 700;
+  color: #FFD700;
+  background: rgba(255, 215, 0, 0.15);
+  padding: 1px 3px;
+  border-radius: 2px;
+}
+
+.kf-crit {
+  font-size: 10px;
+  font-weight: 700;
+  color: #FF6B6B;
+}
+
+/* Assists */
+.kf-assists {
+  display: flex;
+  gap: 3px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.kf-assist {
+  font-family: "Montserrat", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  cursor: default;
+  letter-spacing: 0.05em;
+}
+
+.kf-assist-off {
+  color: #FFB347;
+  background: rgba(255, 179, 71, 0.12);
+  border: 1px solid rgba(255, 179, 71, 0.25);
+}
+
+.kf-assist-def {
+  color: #87CEEB;
+  background: rgba(135, 206, 235, 0.12);
+  border: 1px solid rgba(135, 206, 235, 0.25);
+}
+
+/* States */
+.kf-loading,
+.kf-error,
+.kf-empty {
+  padding: 24px;
+  text-align: center;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  color: rgba(19, 200, 176, 0.4);
+}
+
+.kf-error {
+  color: #ff5050;
+}

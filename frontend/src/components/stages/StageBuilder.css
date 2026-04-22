@@ -1,0 +1,146 @@
+.stage-builder {
+  padding: 20px;
+  background: #0d1117;
+  border-radius: 8px;
+}
+
+.stage-builder-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #c9d1d9;
+  margin-bottom: 16px;
+}
+
+.stage-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.stage-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #21262d;
+  border-bottom: 1px solid #30363d;
+}
+
+.stage-number {
+  font-weight: bold;
+  color: #58a6ff;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.stage-name-input {
+  flex: 1;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #c9d1d9;
+  font-size: 14px;
+}
+
+.stage-name-input:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.stage-remove-btn {
+  background: #da3633;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.stage-remove-btn:hover {
+  background: #f85149;
+}
+
+.stage-card-body {
+  padding: 16px;
+}
+
+.stage-field {
+  margin-bottom: 16px;
+}
+
+.stage-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #8b949e;
+  margin-bottom: 6px;
+}
+
+.stage-select,
+.stage-input {
+  width: 100%;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #c9d1d9;
+  font-size: 14px;
+}
+
+.stage-select:focus,
+.stage-input:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.stage-input {
+  max-width: 300px;
+}
+
+.stage-section {
+  margin-top: 20px;
+  padding: 16px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+}
+
+.stage-section h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #c9d1d9;
+  margin: 0 0 12px 0;
+}
+
+.advancement-section {
+  border-color: #238636;
+}
+
+.stage-hint {
+  font-size: 13px;
+  color: #8b949e;
+  margin: 4px 0 0 0;
+  font-style: italic;
+}
+
+.stage-add-btn {
+  width: 100%;
+  background: #238636;
+  border: 1px solid #2ea043;
+  border-radius: 6px;
+  padding: 12px 16px;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.stage-add-btn:hover {
+  background: #2ea043;
+}

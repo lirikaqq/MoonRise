@@ -1,26 +1,28 @@
 // frontend/src/components/draft/DraftPlayerPool.jsx
 import React, { useState, useMemo } from 'react';
-import { useAuth } from '../../context/AuthContext'; // Импортируем useAuth
+import { useAuth } from '../../context/AuthContext';
 
 // Компонент одной карточки игрока
-const PlayerCard = ({ player, onPick, canPick }) => (
-  <div className="player-card">
-    <div className="player-card-header">
-      <div className="player-card-name">{player.username}</div>
-      <div className="player-card-rating">{player.rating_approved}</div>
+const PlayerCard = ({ player, onPick, canPick }) => {
+  return (
+    <div className="player-card">
+      <div className="player-card-header">
+        <div className="player-card-name" title={player.username}>{player.username}</div>
+        <div className="player-card-rating">{player.rating_approved}</div>
+      </div>
+      <div className="player-card-roles">
+        <span>{player.primary_role}</span> / <span>{player.secondary_role}</span>
+      </div>
+      <button
+        className="player-card-button"
+        onClick={() => onPick(player)}
+        disabled={!canPick}
+      >
+        {canPick ? 'ВЗЯТЬ' : '—'}
+      </button>
     </div>
-    <div className="player-card-roles">
-      <span>{player.primary_role}</span> / <span>{player.secondary_role}</span>
-    </div>
-    <button 
-      className="player-card-button"
-      onClick={() => onPick(player)}
-      disabled={!canPick}
-    >
-      {canPick ? 'PICK' : '—'}
-    </button>
-  </div>
-);
+  );
+};
 
 export default function DraftPlayerPool({ players, currentUser, draftState, makePick }) {
   const [activeRoleFilter, setActiveRoleFilter] = useState('all');
@@ -30,31 +32,32 @@ export default function DraftPlayerPool({ players, currentUser, draftState, make
   const isMyTurn = useMemo(() => {
     if (!draftState || !currentUser || draftState.status !== 'in_progress') return false;
     const currentPickerId = draftState.pick_order[draftState.current_pick_index];
+    // Админ может кликать в любой ход, обычные капитаны — только в свой
+    if (currentUser.role === 'admin') return true;
     return currentUser.id === currentPickerId;
   }, [draftState, currentUser]);
+
+  // Проверка: драфт запущен?
+  const isDraftInProgress = draftState?.status === 'in_progress';
 
   // Фильтруем и ищем игроков
   const filteredPlayers = useMemo(() => {
     return players.filter(player => {
       // Фильтр по роли
-      const roleMatch = activeRoleFilter === 'all' || 
-                        player.primary_role === activeRoleFilter || 
+      const roleMatch = activeRoleFilter === 'all' ||
+                        player.primary_role === activeRoleFilter ||
                         player.secondary_role === activeRoleFilter;
       // Фильтр по поиску
       const searchMatch = player.username.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       return roleMatch && searchMatch;
     });
   }, [players, activeRoleFilter, searchQuery]);
 
-  const handlePick = (player) => {
-    // TODO: Открыть модалку для выбора, на какую роль взять игрока (tank, dps, support)
-    // А пока для теста просто пикаем на первую доступную роль
-    alert(`Picking ${player.username}. In a real app, a role selection modal would appear here.`);
-    
-    // Временно захардкодим роль для теста
+  const handlePick = async (player) => {
+    // Определяем роль: primary или fallback на dps
     const assignedRole = player.primary_role !== 'flex' ? player.primary_role : 'dps';
-    
+
     makePick({
         picked_user_id: player.user_id,
         assigned_role: assignedRole,
@@ -74,7 +77,7 @@ export default function DraftPlayerPool({ players, currentUser, draftState, make
               className={activeRoleFilter === role ? 'active' : ''}
               onClick={() => setActiveRoleFilter(role)}
             >
-              {role}
+              {role === 'all' ? 'Все' : role}
             </button>
           ))}
         </div>
@@ -82,25 +85,39 @@ export default function DraftPlayerPool({ players, currentUser, draftState, make
         <div className="player-pool-search">
           <input
             type="text"
-            placeholder="Search player..."
+            placeholder="Поиск игрока..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="form-input" // Используем стиль из DraftPage.css
           />
         </div>
       </header>
 
       <div className="player-pool-grid">
+        {/* Показываем сообщение если драфт не запущен */}
+        {!isDraftInProgress && (
+          <div style={{
+            textAlign: 'center',
+            color: '#A7F2A2',
+            gridColumn: '1 / -1',
+            padding: '2rem 0',
+            fontSize: '1.1rem',
+          }}>
+            ⏳ Драфт ещё не запущен. Ожидание...
+          </div>
+        )}
+
         {filteredPlayers.map(player => (
-          <PlayerCard 
-            key={player.user_id} 
+          <PlayerCard
+            key={player.user_id}
             player={player}
             onPick={handlePick}
-            canPick={isMyTurn}
+            canPick={isMyTurn && isDraftInProgress}
           />
         ))}
-        {filteredPlayers.length === 0 && (
-            <p>No players match the current filters.</p>
+        {filteredPlayers.length === 0 && isDraftInProgress && (
+            <p style={{ textAlign: 'center', color: '#6b7280', gridColumn: '1 / -1', padding: '2rem 0' }}>
+              Нет игроков по текущим фильтрам
+            </p>
         )}
       </div>
     </>

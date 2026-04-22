@@ -7,7 +7,7 @@ export default function DraftTimer({ draftState, currentUser, isConnected }) {
   // Определяем, чей сейчас ход
   const currentPickData = useMemo(() => {
     if (!draftState || draftState.status !== 'in_progress') return null;
-    
+
     // Если драфт закончился
     if (draftState.current_pick_index >= draftState.pick_order.length) return null;
 
@@ -31,7 +31,7 @@ export default function DraftTimer({ draftState, currentUser, isConnected }) {
       const deadline = new Date(draftState.current_pick_deadline).getTime();
       const now = Date.now();
       const diffSeconds = Math.floor((deadline - now) / 1000);
-      
+
       return diffSeconds > 0 ? diffSeconds : 0;
     };
 
@@ -41,7 +41,7 @@ export default function DraftTimer({ draftState, currentUser, isConnected }) {
     const intervalId = setInterval(() => {
       const newTimeLeft = calculateTimeLeft();
       setTimeLeft(newTimeLeft);
-      
+
       // Если время вышло, можно остановить интервал (бэкенд сам сделает авто-пик)
       if (newTimeLeft <= 0) {
         clearInterval(intervalId);
@@ -59,15 +59,19 @@ export default function DraftTimer({ draftState, currentUser, isConnected }) {
   if (draftState.status === 'pending') {
     return (
       <div className="draft-top-bar" style={{ justifyContent: 'center' }}>
-        <h2 className="text-2xl font-bold text-gray-400">WAITING FOR DRAFT TO START...</h2>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#6b7280', margin: 0 }}>
+          ОЖИДАНИЕ ЗАПУСКА ДРАФТА...
+        </h2>
       </div>
     );
   }
 
   if (draftState.status === 'completed') {
     return (
-      <div className="draft-top-bar" style={{ justifyContent: 'center', backgroundColor: 'rgba(19, 200, 176, 0.1)' }}>
-        <h2 className="text-3xl font-bold text-[var(--accent)]">DRAFT COMPLETED</h2>
+      <div className="draft-top-bar" style={{ justifyContent: 'center', background: 'rgba(19, 173, 145, 0.1)' }}>
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#13AD91', margin: 0 }}>
+          ДРАФТ ЗАВЕРШЁН
+        </h2>
       </div>
     );
   }
@@ -78,14 +82,14 @@ export default function DraftTimer({ draftState, currentUser, isConnected }) {
 
     return (
       <div className="draft-top-bar">
-        
+
         {/* Инфо о текущей команде */}
         <div className="draft-status-info">
           <div className="draft-turn-label">
-            Current Pick (Round {Math.floor(draftState.current_pick_index / draftState.captains.length) + 1})
+            Текущий пик (Раунд {Math.floor(draftState.current_pick_index / draftState.captains.length) + 1})
           </div>
           <div className="draft-current-team">{currentPickData.team.team_name}</div>
-          <div className="draft-current-captain">Picking: {currentPickData.team.username}</div>
+          <div className="draft-current-captain">Выбирает: {currentPickData.team.username}</div>
         </div>
 
         {/* Таймер */}
@@ -93,11 +97,11 @@ export default function DraftTimer({ draftState, currentUser, isConnected }) {
           <div className={`draft-timer-value ${isWarning ? 'draft-timer-warning' : ''}`}>
             {timeLeft !== null ? `0:${timeLeft.toString().padStart(2, '0')}` : '--:--'}
           </div>
-          
+
           {/* Плашка "Твой ход" */}
           {currentPickData.isMyTurn && (
             <div className="draft-my-turn-badge">
-              YOUR TURN TO PICK!
+              ТВОЙ ХОД!
             </div>
           )}
         </div>

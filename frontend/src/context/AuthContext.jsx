@@ -1,35 +1,51 @@
 // frontend/src/context/AuthContext.jsx
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import client from '../api/client'; // Убедись, что client настроен правильно
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import client from '../api/client';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const abortControllerRef = useRef(null);
 
-  // useCallback, чтобы функция не пересоздавалась на каждый рендер
   const fetchMe = useCallback(async () => {
-    // Получаем токен ПЕРЕД запросом
     const token = localStorage.getItem('moonrise_token');
     if (!token) {
+        console.debug('[AuthContext] No token found, setting guest mode');
         setUser(null);
         setLoading(false);
         return;
     }
-    
-    // Временно добавляем токен в заголовок для этого запроса
-    // (Лучше делать это через interceptors в client.js)
+
+    // Отменяем предыдущий запрос если он ещё pending
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
+    console.debug('[AuthContext] Fetching /users/me...');
     try {
-      const response = await client.get('/users/me', { // <-- ПРЕДПОЛАГАЮ, ЧТО ПУТЬ /users/me
+      const response = await client.get('/users/me', {
           headers: {
               'Authorization': `Bearer ${token}`
-          }
+          },
+          signal: abortControllerRef.signal,
       });
-      console.log('✅ fetchMe success:', response.data);
+      console.debug('[AuthContext] /users/me success:', response.data);
       setUser(response.data);
     } catch (error) {
-      console.error('❌ fetchMe failed:', error.response?.status, error.response?.data);
+      if (error.name === 'AbortError') {
+        console.debug('[AuthContext] /users/me request aborted');
+        return;
+      }
+      if (error.code === 'ECONNABORTED') {
+        console.error('⏱️ [AuthContext] /users/me timeout (10s)');
+      } else if (error.code === 'ERR_NETWORK') {
+        console.error('🌐 [AuthContext] /users/me network error — backend unreachable');
+      } else {
+        console.error('❌ [AuthContext] /users/me failed:', error.response?.status, error.response?.data?.detail);
+      }
       localStorage.removeItem('moonrise_token');
       setUser(null);
     } finally {
@@ -40,12 +56,18 @@ export function AuthProvider({ children }) {
   // Этот useEffect запускается один раз при старте приложения
   useEffect(() => {
     fetchMe();
+
+    // Cleanup: отменяем запрос при размонтировании
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [fetchMe]);
 
   const login = async (token) => {
     console.log('🔐 login() called');
     localStorage.setItem('moonrise_token', token);
-    // После логина сразу запрашиваем данные пользователя
     await fetchMe();
   };
 
