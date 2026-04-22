@@ -36,29 +36,38 @@ redis_data/
 # MOONRISE SPECIFIC
 # ==========================================
 
-# Логи
+# AI / Temporary files
+.continue/
+.qwen/
+QWEN.md
+TESTING_PLAN.md
+migration_check.py
+openapi_check.json
+token.json
+token.txt
+
+# Credentials & Secrets
+backend/google_credentials.json
+backend/google_credetials.json
+*.pem
+*.key
+
+# Logs
 backend/logs/*.txt
 *.log
 
-# Локальные конфиги и тестовые данные
+# Local configs and test data
 backend/tournament_config.json
 backend/register.json
 backend/match.txt
-backend/google_credentials.json
-backend/google_credetials.json
 
-# AI Tools
-.continue/
-
-# Одноразовые/локальные админские скрипты (не коммитим)
+# One-off admin scripts (not for repo)
 backend/clead_db.py
 backend/clear_db.py
 backend/make_admin.py
 backend/bulk_import.py
 backend/seed_tournaments.py
 backend/update_team_config.py
-
-# Скрипты, которые лежат в корне и в backend/scripts/ (дубли)
 cleanup_tournament_6.py
 import_teams_from_balancer.py
 repair_participants.py
@@ -66,26 +75,11 @@ show_teams.py
 check_participants.py
 check_teams.py
 reimport_participants.py
-import_tournament_participants.py
 cleanup_all_users.py
-create_test_team.py
-delete_test_team.py
 
-# Данные
+# Data files
 teams_5v5.csv
 import_data.tsv
 
-# ==========================================
-# Alembic & Migrations
-# ==========================================
+# Alembic cache
 backend/alembic/versions/__pycache__/
-
-# Temporary / Backup files
-*.bak
-*.tmp
-*~
-
-
-
-backend/google_credentials.json
-backend/google_credetials.json
