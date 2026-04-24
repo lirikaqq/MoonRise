@@ -41,12 +41,10 @@ redis_data/
 .qwen/
 QWEN.md
 TESTING_PLAN.md
-migration_check.py
-openapi_check.json
-token.json
-token.txt
 
 # Credentials & Secrets
+token.json
+token.txt
 backend/google_credentials.json
 backend/google_credetials.json
 *.pem
@@ -80,6 +78,33 @@ cleanup_all_users.py
 # Data files
 teams_5v5.csv
 import_data.tsv
+
+# Test/Restore scripts (auto-ignore patterns)
+backend/test_*.py
+backend/check_*.py
+backend/fix_*.py
+backend/show_*.py
+backend/create_tables*.py
+backend/import_*.py
+backend/restore_*.py
+backend/full_*.py
+backend/final_*.py
+test_*.py
+check_*.py
+fix_*.py
+show_*.py
+create_tables*.py
+import_*.py
+restore_*.py
+full_*.py
+final_team_assignment.py
+
+# Paired scripts folder
+backend/scripts/
+
+# Temporary files
+*.tmp
+*.bak
 
 # Alembic cache
 backend/alembic/versions/__pycache__/

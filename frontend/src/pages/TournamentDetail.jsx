@@ -82,6 +82,13 @@ function ParticipantCard({ player, index }) {
   const checkedIn = player.status === 'checkedin'
   const allowed = player.is_allowed !== false
 
+  // Унифицированные поля с fallback'ами
+  const displayName = player.display_name || player.user_display_name || '?'
+  const battleTag = player.battle_tag || '?'
+  const primaryRole = player.primary_role || 'flex'
+  const bio = player.bio || player.notes || ''
+  const discordTag = player.discord_tag || player.application_data?.discord_tag || '?'
+
   const handleClick = () => {
     if (!player.id) return
     setIsClicking(true)
@@ -105,10 +112,10 @@ function ParticipantCard({ player, index }) {
     >
       <div className="td-p-card-header">
         <span className="td-p-card-num">{index}</span>
-        {player.primary_role && (
+        {primaryRole && (
           <div className="td-p-role-badge">
-            <img src={`/assets/icons/icon-role-${player.primary_role}.svg`} alt="" className="td-p-badge-icon" />
-            <span>{player.primary_role.toUpperCase()}</span>
+            <img src={`/assets/icons/icon-role-${primaryRole}.svg`} alt="" className="td-p-badge-icon" />
+            <span>{primaryRole.toUpperCase()}</span>
           </div>
         )}
       </div>
@@ -116,18 +123,18 @@ function ParticipantCard({ player, index }) {
         <div className="td-p-avatar">
           {player.avatar_url
             ? <img src={player.avatar_url} alt="" />
-            : <span className="td-p-avatar-placeholder">{(player.display_name || '?')[0].toUpperCase()}</span>
+            : <span className="td-p-avatar-placeholder">{(displayName || '?')[0].toUpperCase()}</span>
           }
         </div>
         <div className="td-p-player-info">
-          <span className="td-p-battletag">{player.battle_tag || (player.display_name || '').toUpperCase()}</span>
+          <span className="td-p-battletag">{battleTag || displayName.toUpperCase()}</span>
           <div className="td-p-sub-name">
             <img src="/assets/icons/discord.svg" alt="" className="td-p-discord-icon" />
-            {(player.display_name || '').toUpperCase()}
+            {discordTag.toUpperCase()}
           </div>
         </div>
       </div>
-      {player.bio && <p className="td-p-bio">{player.bio}</p>}
+      {bio && <p className="td-p-bio">{bio}</p>}
       <div className="td-p-divider"></div>
       <div className="td-p-card-footer">
         <div className={`td-p-checkin ${checkedIn ? 'td-p-checkin-on' : ''}`}>

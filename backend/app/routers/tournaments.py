@@ -13,6 +13,7 @@ from app.database import get_db
 from app.models.tournament import Tournament, TournamentParticipant
 from app.models.match import Team, Encounter
 from app.models.user import User, BattleTag
+from app.schemas.participant import ParticipantCore, ParticipantResponse, normalize_participant_data
 
 from app.core.security import decode_access_token, get_current_admin
 from app.core.html_sanitizer import sanitize_html
@@ -34,6 +35,7 @@ from app.schemas.tournament import (
     ReplacementResponse,
     TeamWithHistoryResponse,
 )
+from app.schemas.participant import ParticipantCore, normalize_participant_data
 
 from app.services.tournament_service import (
     TournamentService, 
@@ -391,7 +393,7 @@ async def get_tournament_bracket(
 # GET /tournaments/{id}/participants
 # ============================
 
-@router.get("/{tournament_id}/participants")
+@router.get("/{tournament_id}/participants", response_model=ParticipantResponse)
 async def get_tournament_participants(
     tournament_id: int,
     search: Optional[str] = None,
@@ -420,20 +422,18 @@ async def get_tournament_participants(
 
     participants = []
     for p, u in rows:
-        app_data = {}
-        if p.application_data:
-            try:
-                app_data = json.loads(p.application_data)
-            except:
-                pass
+        # Получаем основной BattleTag пользователя (если есть)
+        battletag_query = select(BattleTag).where(
+            BattleTag.user_id == u.id,
+            BattleTag.is_primary == True
+        ).limit(1)
+        battletag_result = await db.execute(battletag_query)
+        battletag_obj = battletag_result.scalar_one_or_none()
+        battletag = battletag_obj.tag if battletag_obj else None
 
-        participants.append({
-            "user_id": u.id,
-            "user_display_name": u.display_name or u.username,
-            "user_username": u.username,
-            "application_data": app_data,
-            "is_captain": p.is_captain,
-        })
+        # Нормализуем данные участника
+        participant_data = normalize_participant_data(p, u, battletag)
+        participants.append(participant_data)
 
     return {"participants": participants}
 

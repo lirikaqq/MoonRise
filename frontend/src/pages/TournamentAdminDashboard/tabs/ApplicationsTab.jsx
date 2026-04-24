@@ -21,7 +21,8 @@ const parseApplicationData = (app) => {
   const username = (app.user_display_name || app.user_username || '').trim();
 
   const battletag = data.battletag_value || data.battletag || '—';
-  const discord = username || data.discord_tag || '—';
+  // FIX: Prioritize discord_tag over username for Discord display
+  const discord = data.discord_tag || username || '—';
 
   const primaryRole = data.primary_role || '—';
   const secondaryRole = data.secondary_role || '—';
